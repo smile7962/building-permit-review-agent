@@ -1,0 +1,93 @@
+{
+  "version": "2026-10-13-v1",
+  "fields": [
+    {
+      "key": "permit_type",
+      "label": "신청 구분",
+      "type": "select",
+      "options": [
+        "",
+        "건축허가",
+        "건축신고"
+      ],
+      "required": true
+    },
+    {
+      "key": "work_type",
+      "label": "건축 구분",
+      "type": "text"
+    },
+    {
+      "key": "site_address",
+      "label": "대지 위치",
+      "type": "text",
+      "required": true
+    },
+    {
+      "key": "site_area_m2",
+      "label": "대지면적 (㎡)",
+      "type": "number"
+    },
+    {
+      "key": "building_area_m2",
+      "label": "건축면적 (㎡)",
+      "type": "number"
+    },
+    {
+      "key": "total_floor_area_m2",
+      "label": "연면적 (㎡)",
+      "type": "number"
+    },
+    {
+      "key": "building_coverage_percent",
+      "label": "건폐율 (%)",
+      "type": "number"
+    },
+    {
+      "key": "floor_area_ratio_percent",
+      "label": "용적률 (%)",
+      "type": "number"
+    },
+    {
+      "key": "primary_use",
+      "label": "주용도",
+      "type": "text",
+      "required": true
+    },
+    {
+      "key": "structure",
+      "label": "구조",
+      "type": "text"
+    },
+    {
+      "key": "above_ground_floors",
+      "label": "지상층수",
+      "type": "integer"
+    },
+    {
+      "key": "underground_floors",
+      "label": "지하층수",
+      "type": "integer"
+    },
+    {
+      "key": "building_count",
+      "label": "건축물 동수",
+      "type": "integer"
+    },
+    {
+      "key": "parking_spaces",
+      "label": "주차계획 (대)",
+      "type": "integer"
+    },
+    {
+      "key": "zoning",
+      "label": "용도지역",
+      "type": "text"
+    },
+    {
+      "key": "notes",
+      "label": "특이사항",
+      "type": "textarea"
+    }
+  ]
+}
