@@ -196,14 +196,14 @@ async function exportCase() {
     message("사건파일을 다운로드했습니다. 안전한 위치에 보관하세요.");
   }catch(e){message(e.message,true);}
 }
-async function confirmValues() {
+async function confirmFields() {
   try{await persist();const r=await api("/api/confirm",{method:"POST"});state=r.case;render();message("담당자 검토 확정 완료");}
   catch(e){message(e.message,true);}
 }
 async function init() {
   el("newButton").addEventListener("click",newCase);
   el("exportButton").addEventListener("click",exportCase);
-  el("confirmButton").addEventListener("click",confirmValues);
+  el("confirmButton").addEventListener("click",confirmFields);
   el("openButton").addEventListener("click",()=>el("caseInput").click());
   el("uploadButton").addEventListener("click",()=>el("applicationInput").click());
   el("applicationInput").addEventListener("change",e=>{upload(e.target.files[0]);e.target.value="";});
