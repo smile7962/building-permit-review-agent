@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>건축허가·신고 검토지원 | 건축ON AI</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script defer src="/static/app.js"></script>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><span class="brand-icon">B</span><div><strong>건축ON <span class="ai">AI</span></strong><small>건축허가·신고 검토·협의 지원</small></div></div>
+    <div class="case-summary"><span class="dot"></span><span id="caseTitle">새 사건</span><span class="split">|</span><span id="caseId">사건 ID</span></div>
+    <div class="top-actions">
+      <button class="btn ghost" id="newButton">＋ 새 사건</button>
+      <button class="btn ghost" id="openButton">↥ 사건 열기</button>
+      <button class="btn primary" id="exportButton">↓ .bcase 저장</button>
+      <input id="caseInput" type="file" accept=".bcase" hidden>
+    </div>
+  </header>
+  <div class="workspace">
+    <aside class="sidebar">
+      <div class="sidebar-caption">WORKFLOW <span>01 / 09</span></div>
+      <nav aria-label="업무 단계">
+        <button class="step current" data-step="1"><span class="step-num">01</span><span><strong>신청서 분석</strong><small>자료 입력 · 건축개요 확정</small></span><span class="step-indicator" id="step1Mark">●</span></button>
+        <button class="step" data-step="2"><span class="step-num">02</span><span><strong>건축법 검토</strong><small>검토 체크리스트</small></span><span class="lock">준비중</span></button>
+        <button class="step" data-step="3"><span class="step-num">03</span><span><strong>협의부서 선정</strong><small>규칙 기반 협의대상</small></span><span class="lock">준비중</span></button>
+        <button class="step" data-step="4"><span class="step-num">04</span><span><strong>협의공문</strong><small>부서별 공문 작성</small></span><span class="lock">준비중</span></button>
+        <button class="step" data-step="5"><span class="step-num">05</span><span><strong>협의회신</strong><small>회신 검토 · 정리</small></span><span class="lock">준비중</span></button>
+        <button class="step" data-step="6"><span class="step-num">06</span><span><strong>보완요구</strong><small>보완사항 취합</small></span><span class="lock">준비중</span></button>
+        <button class="step" data-step="7"><span class="step-num">07</span><span><strong>재협의</strong><small>담당자 지정 재협의</small></span><span class="lock">준비중</span></button>
+        <button class="step" data-step="8"><span class="step-num">08</span><span><strong>검토조서</strong><small>최종 검토초안</small></span><span class="lock">준비중</span></button>
+        <button class="step" data-step="9"><span class="step-num">09</span><span><strong>처리공문</strong><small>처리결과 문서</small></span><span class="lock">준비중</span></button>
+      </nav>
+      <div class="sidebar-footer"><span>Phase 1 / v0.1</span><small>현재: 신청정보 구조화 기능</small></div>
+    </aside>
+    <main class="main">
+      <div class="page-heading"><div><div class="eyebrow">STEP 01 · 신청서 분석</div><h1>신청정보 확인</h1><p>신청서를 등록하고 자동 추출된 항목을 원문과 대조하여 확정합니다.</p></div><span class="status" id="reviewStatus">검토 전</span></div>
+      <section class="upload-box" id="dropzone">
+        <div class="upload-icon">⇧</div><div class="upload-copy"><strong>세움터 신청서 업로드</strong><span>파일을 끌어다 놓거나, 파일을 선택하세요.</span><small>TXT · CSV · PDF(문자형) · DOCX · XLSX / 15MB 이하</small></div>
+        <button class="btn outline" id="uploadButton">파일 선택</button><input id="applicationInput" type="file" accept=".txt,.csv,.pdf,.docx,.xlsx" hidden>
+      </section>
+      <div class="option-row"><label><input type="checkbox" id="externalAiConsent"> 외부 AI로 문서 분석 허용 (민감자료 사용 금지)</label><span id="aiMode">로컬 분석 기본값</span></div>
+      <section class="panel">
+        <div class="panel-heading"><div><h2>건축개요</h2><span>자동 추출 정보 · 담당자 직접 수정 가능</span></div><div class="panel-count"><b id="completeCount">0</b> / <span id="totalCount">16</span> 항목 입력</div></div>
+        <div id="fieldGrid" class="field-grid"></div>
+        <div class="form-footer"><div><span id="saveIndicator" class="save-indicator">● 변경사항 없음</span><small>자동 임시저장: 현재 PC의 작업공간</small></div><button class="btn success" id="confirmButton">✓ 건축개요 검토 확정</button></div>
+      </section>
+      <section class="panel sources"><div class="panel-heading"><div><h2>원본 신청서 대조</h2><span>추출 출처를 클릭하면 원문 위치를 확인할 수 있습니다.</span></div></div>
+        <div id="sourceEmpty" class="empty">신청서를 업로드하면 원문 줄과 항목별 출처가 표시됩니다.</div>
+        <div id="sourceContent" hidden><div class="source-toolbar"><select id="documentSelector" aria-label="원본문서 선택"></select><a id="downloadOriginal" href="#" class="textlink">원본 다운로드 ↗</a></div><div class="source-list" id="sourceLines"></div></div>
+      </section>
+    </main>
+    <aside class="ai-sidebar">
+      <div class="assistant-heading"><span class="assistant-icon">✦</span><div><strong>AI 업무 지원</strong><small>현재 단계 · 신청서 분석</small></div><span class="assistant-state">Phase 1</span></div>
+      <section class="assistant-card"><h3>현재 작업 가이드</h3><p>① 개인정보를 제거한 신청서를 입력합니다.</p><p>② 추출값과 원문을 비교합니다.</p><p>③ 필요한 값을 직접 수정합니다.</p><p>④ 검토 확정을 눌러 공식 입력값으로 지정합니다.</p></section>
+      <section class="assistant-card"><h3>자료 검증</h3><div id="validationResult" class="validation">신청서를 입력하면 필수 항목과 입력상태를 확인합니다.</div></section>
+      <section class="assistant-card"><h3>사건 이력</h3><div id="historyItems" class="history-items"></div></section>
+      <div class="assistant-disclaimer">AI 추출 결과는 검토 초안입니다. 법적 적합성 판단과 인허가 결정은 담당자가 수행합니다.</div>
+    </aside>
+  </div>
+  <div role="status" aria-live="polite" class="toast" id="toast" hidden></div>
+</div>
+</body>
+</html>
