@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+workspace/
+*.bcase
+.env
+.env.*
+!/.env.example
+.DS_Store
