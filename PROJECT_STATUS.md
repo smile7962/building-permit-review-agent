@@ -24,10 +24,10 @@
 
 ## 검증 결과
 
-- 서비스 단위/HTTP 통합 **9개 테스트 통과**.
+- 기준 로컬 패키지에서 서비스 단위/HTTP 통합 **9개 테스트 통과**. GitHub에 등록한 UI 코드는 일부 간소화했으므로 GitHub CI 재검증 필요.
 - 브라우저 자동화 실행 환경에서 `ERR_BLOCKED_BY_ADMINISTRATOR` 차단 발생 → 클릭 및 렌더링 시각 검증 미완료. 배포 후 Windows 브라우저에서 사용자 검증 필요.
 - 원본 신청서 실제 세움터 형식 미확보 → 파싱 정확도는 합성 텍스트 기준으로만 검증. 실제 서식별 파싱 평가 필요.
-- `node --check static/app.js` JavaScript 구문 검사 통과.
+- 기준 로컬 패키지에서 `node --check static/app.js` 통과. GitHub 등록본은 별도 검증 필요.
 
 ## 다음 개발 체크포인트 (Phase 1.1)
 
@@ -43,7 +43,7 @@
 
 - GitHub 저장소: https://github.com/smile7962/building-permit-review-agent (생성 확인, `main`)
 - GitHub 공개 범위: Public (민감자료·실제 민원자료 반입 금지)
-- README 및 초기 공통 마스터·모의자료 등록 완료. 전체 실행 소스 업로드는 `publish_to_github_windows.bat` 실행 후 확인 필요.
+- Python 서버·사건파일·파서·정적 UI·테스트·모의자료·공통 마스터 등록 완료. 브라우저 수동 사용성 검증 및 GitHub CI 검증은 별도 진행.
 - 공공 GitLab 이관은 대회 제출 단계에 별도 수행.
 
 ## 평가용 메시지
