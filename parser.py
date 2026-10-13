@@ -8,15 +8,15 @@ import zipfile
 from pathlib import Path
 
 ALIAS = {
- 'permit_type': ['신청 구분', '허가 신고 구분', '신청종류'],
+ 'permit_type': ['신청 구분', '허가 신고 구분', '신청종류', '민원구분'],
  'work_type': ['건축 구분', '건축구분', '건축종별'],
  'site_address': ['대지 위치', '대지위치', '대지의 위치', '대지 소재지', '소재지'],
- 'site_area_m2': ['대지면적', '대지 면적'],
+ 'site_area_m2': ['대지면적', '대지 면적', '대지면적(㎡)'],
  'building_area_m2': ['건축면적', '건축 면적'],
  'total_floor_area_m2': ['연면적', '연 면적'],
  'building_coverage_percent': ['건폐율'],
  'floor_area_ratio_percent': ['용적률'],
- 'primary_use': ['주용도', '주 용도', '건축물용도', '건축물 용도', '주된 용도'],
+ 'primary_use': ['주용도', '주 용도', '건축물용도', '건축물 용도', '주된 용도', '주용도(건축물)'],
  'structure': ['주구조', '구조'],
  'above_ground_floors': ['지상층수', '지상 층수', '지상층'],
  'underground_floors': ['지하층수', '지하 층수', '지하층'],
@@ -117,31 +117,48 @@ def _clean(key, value):
         m = re.search(r'(\d+)', val.replace(',', ''))
         return m.group(1) if m else ''
     if key == 'permit_type':
-        if '신고' in val and '허가' not in val: return '건축신고'
-        if '허가' in val and '신고' not in val: return '건축허가'
+        if val.strip() in ('건축신고', '신고'): return '건축신고'
+        if val.strip() in ('건축허가', '허가'): return '건축허가'
         return ''
     return val[:1500]
 
 
 def local_parse(lines, allowed_keys):
+    """Extract labeled fields, retaining the exact source line.
+
+    Supports both "대지면적: 350㎡" and "대지면적(㎡) 350.00".
+    Ambiguous permit headings are never used to infer a permit type.
+    """
     values, sources = {}, {}
-    # Prioritize longer/specific aliases (e.g. 대지면적 before generic 소재지).
-    aliases = sorted(((alias, key) for key, lst in ALIAS.items() for alias in lst if key in allowed_keys),
+    aliases = sorted(((alias, key) for key, lst in ALIAS.items()
+                      for alias in lst if key in allowed_keys),
                      key=lambda x: -len(x[0]))
+    number_keys = {'site_area_m2', 'building_area_m2', 'total_floor_area_m2',
+                   'building_coverage_percent', 'floor_area_ratio_percent',
+                   'above_ground_floors', 'underground_floors', 'building_count', 'parking_spaces'}
     for line in lines:
-        s = line['text'].strip()
-        for alias, key in aliases:
-            # anchored to the beginning: never mistake an explanatory paragraph for a field
-            pattern = r'^\s*(?:[\[【(（]?\d+[)）.\]]?\s*)?' + re.escape(alias) + r'\s*[:：=\t]\s*(.+)$'
-            m = re.match(pattern, s, flags=re.IGNORECASE)
-            if not m:
-                continue
-            value = _clean(key, m.group(1))
-            if value and key not in values:
-                values[key] = value
-                sources[key] = {'line': line['n'], 'where': line['where'],
-                                'evidence': s, 'method': '규칙 기반', 'edited_by_user': False}
-            break
+        text = line['text'].strip()
+        fragments = re.split(r'\s*\|\s*|\t+', text)
+        for fragment in fragments:
+            s = fragment.strip()
+            for alias, key in aliases:
+                if key in values:
+                    continue
+                pattern = (r'^\s*(?:[\[【(（]?\d+[)）.\]]?\s*)?'
+                           + re.escape(alias) + r'\s*(?:\((?:㎡|m2|%|대|동)\))?'
+                           + r'(?:\s*[:：=]\s*|\s+)(.+)$')
+                match = re.match(pattern, s, flags=re.IGNORECASE)
+                if not match:
+                    continue
+                candidate = match.group(1).strip()
+                if key in number_keys and not re.match(r'^[+]?\d[\d,]*(?:\.\d+)?\s*(?:㎡|m²|m2|%|층|동|대)?(?:\s|$)', candidate):
+                    continue
+                value = _clean(key, candidate)
+                if value:
+                    values[key] = value
+                    sources[key] = {'line': line['n'], 'where': line['where'],
+                                    'evidence': s, 'method': '규칙 기반', 'edited_by_user': False}
+                break
     return values, sources
 
 
