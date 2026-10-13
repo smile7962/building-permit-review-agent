@@ -102,3 +102,6 @@ python -m unittest discover -s tests -v
 GitHub 개발원본과 공공 GitLab 제출본은 **별도 관리**합니다. `workspace/`, `.bcase`, `.env`, API 키와 민감자료는 Git에 올리지 않습니다. 공공 GitLab 심사 설정과 대회 제출서류는 별도 검증합니다.
 
 시연 편의를 위해 `samples/sample_case.bcase`도 포함했습니다. `사건 열기`로 열면 합성 신청서의 추출 초안을 확인할 수 있습니다(담당자 검토 확정 전 상태).
+## GitHub 개발 저장소 등록 현황
+
+2026-10-13 기준: `main`에 README, 공통 건축개요 마스터, 모의 신청서, .gitignore 및 Windows 실행 준비파일을 등록했습니다. **Python 서버·사건파일·파서와 JS/CSS 전체 실행 소스는 아직 저장소에 등록되지 않았습니다.** 기존 검증된 v0.1 ZIP에 포함된 `publish_to_github_windows.bat`으로 나머지 실행 코드를 본인의 인증 하에 push해야 합니다. ZIP과 GitHub의 현재 상태를 혼동하지 마세요. 실무 개인정보와 민감자료는 등록 금지입니다.
