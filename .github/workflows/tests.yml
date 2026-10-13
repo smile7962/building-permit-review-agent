@@ -1,0 +1,22 @@
+name: Phase 1 tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  unittest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Python syntax check
+        run: python -m compileall -q server.py case_store.py parser.py tests
+      - name: Run unit and HTTP tests
+        env:
+          APP_NO_BROWSER: '1'
+          AI_MODE: 'off'
+        run: python -m unittest discover -s tests -v
