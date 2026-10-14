@@ -6,6 +6,7 @@ import re
 import urllib.request
 import zipfile
 from pathlib import Path
+from seumteo_layout import parse_seumteo
 
 ALIAS = {
  'permit_type': ['신청 구분', '허가 신고 구분', '신청종류', '민원구분'],
@@ -85,6 +86,19 @@ def extract_lines(filename, data):
             for r, row in enumerate(table.rows, 1):
                 cells = [cell.text.strip() for cell in row.cells]
                 append_text(': '.join(x for x in cells if x), f'표 {it}·행 {r}')
+    elif ext == '.xls':
+        from xls_legacy import read_xls_cells
+        from collections import defaultdict
+        cell_rows = defaultdict(list)
+        for sheet, row_number, col, value in read_xls_cells(data):
+            cell_rows[(sheet, row_number)].append({'col':col,'text':value})
+            if len(cell_rows) > 15000:
+                raise ValueError('XLS 분석은 15,000행 이내로 제한합니다.')
+        for (sheet, row_number), cells in cell_rows.items():
+            cells = sorted(cells, key=lambda c: c['col'])
+            text = ' | '.join(c['text'] for c in cells)
+            append_text(text, f'{sheet} {row_number}행')
+            out[-1]['cells'] = cells
     elif ext == '.xlsx':
         _zip_safety(data)
         try:
@@ -101,7 +115,7 @@ def extract_lines(filename, data):
                     raise ValueError('시트는 10,000행 이내로 제한합니다.')
         wb.close()
     else:
-        raise ValueError('지원 형식은 TXT, CSV, PDF(텍스트형), DOCX, XLSX입니다. HWP/HWPX는 현재 미지원입니다.')
+        raise ValueError('지원 형식은 TXT, CSV, PDF(텍스트형), DOCX, XLS, XLSX입니다. HWP/HWPX는 현재 미지원입니다.')
     if not out:
         raise ValueError('읽을 수 있는 글자가 없습니다. 스캔 PDF 등은 현재 자동 추출할 수 없습니다.')
     return out
@@ -124,10 +138,10 @@ def _clean(key, value):
 
 
 def local_parse(lines, allowed_keys):
-    """Extract labeled fields, retaining the exact source line.
+    """Extract only labeled entries, preserving the precise source line.
 
-    Supports both "대지면적: 350㎡" and "대지면적(㎡) 350.00".
-    Ambiguous permit headings are never used to infer a permit type.
+    Supports both ``대지면적: 350㎡`` and ``대지면적(㎡) 350.00``.
+    Does not infer a permit type from a heading, or guess from other fields.
     """
     values, sources = {}, {}
     aliases = sorted(((alias, key) for key, lst in ALIAS.items()
@@ -138,12 +152,14 @@ def local_parse(lines, allowed_keys):
                    'above_ground_floors', 'underground_floors', 'building_count', 'parking_spaces'}
     for line in lines:
         text = line['text'].strip()
+        # Splitting table cells at tabs or pipes keeps one field per fragment.
         fragments = re.split(r'\s*\|\s*|\t+', text)
         for fragment in fragments:
             s = fragment.strip()
             for alias, key in aliases:
                 if key in values:
                     continue
+                # Ignore explanatory prose, require label at the start of a fragment.
                 pattern = (r'^\s*(?:[\[【(（]?\d+[)）.\]]?\s*)?'
                            + re.escape(alias) + r'\s*(?:\((?:㎡|m2|%|대|동)\))?'
                            + r'(?:\s*[:：=]\s*|\s+)(.+)$')
@@ -151,6 +167,8 @@ def local_parse(lines, allowed_keys):
                 if not match:
                     continue
                 candidate = match.group(1).strip()
+                # Numbers must begin with the actual quantity; never pick the
+                # first digit of another label or a date later in the line.
                 if key in number_keys and not re.match(r'^[+]?\d[\d,]*(?:\.\d+)?\s*(?:㎡|m²|m2|%|층|동|대)?(?:\s|$)', candidate):
                     continue
                 value = _clean(key, candidate)
@@ -226,6 +244,10 @@ def ai_parse(lines, allowed_keys):
 def parse_application(filename, data, allowed_keys, consent=False):
     lines = extract_lines(filename, data)
     values, sources = local_parse(lines, allowed_keys)
+    form_values, form_sources = parse_seumteo(lines, allowed_keys)
+    # The overall form summary overrides later building/floor details.
+    values.update(form_values)
+    sources.update(form_sources)
     method, warning = '규칙 기반', ''
     if consent and ai_available():
         try:
