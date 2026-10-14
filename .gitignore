@@ -4,6 +4,11 @@ __pycache__/
 workspace/
 *.bcase
 .env
-.env.*
-!/.env.example
-.DS_Store
+
+# Avoid accidentally publishing real application documents
+*.xls
+*.xlsx
+*.pdf
+*.docx
+private_examples/
+raw_uploads/
