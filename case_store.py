@@ -133,6 +133,7 @@ class CaseStore:
             documents = con.execute("SELECT id,filename,sha256,uploaded_at FROM documents ORDER BY id DESC").fetchall()
             history = con.execute("SELECT happened_at,action,detail FROM history ORDER BY id DESC LIMIT 12").fetchall()
             master_version = con.execute("SELECT value FROM metadata WHERE key='master_version'").fetchone()[0]
+            detail_row = con.execute("SELECT payload_json FROM records WHERE category='application_details' ORDER BY id DESC LIMIT 1").fetchone()
             return {
                 'case_id': row['case_id'],
                 'values': json.loads(row['values_json']),
@@ -141,6 +142,7 @@ class CaseStore:
                 'created_at': row['created_at'],
                 'updated_at': row['updated_at'],
                 'master_version': master_version,
+                'application_details': json.loads(detail_row[0]) if detail_row else None,
                 'documents': [dict(x) for x in documents],
                 'history': [dict(x) for x in history]
             }
@@ -170,7 +172,7 @@ class CaseStore:
                     con.commit()
             return self.state()
 
-    def add_application(self, filename, sha256, mime, content, lines, extracted, sources, method):
+    def add_application(self, filename, sha256, mime, content, lines, extracted, sources, method, details=None):
         with self.lock, self._connect() as con:
             t = now()
             con.execute("INSERT INTO documents(filename,sha256,mime,content,extracted_lines_json,uploaded_at) VALUES (?,?,?,?,?,?)",
@@ -180,6 +182,20 @@ class CaseStore:
             for source in sources.values():
                 source['document_id'] = docid
                 source['filename'] = filename
+            if details is not None:
+                # Drafts are stored separately from the 16 authoritative summary fields.
+                # Each cited source is linked to the immutable original document.
+                def attach_source(obj):
+                    if isinstance(obj, dict):
+                        if 'line' in obj and 'where' in obj and 'evidence' in obj:
+                            obj['document_id'] = docid
+                            obj['filename'] = filename
+                        for val in obj.values(): attach_source(val)
+                    elif isinstance(obj, list):
+                        for val in obj: attach_source(val)
+                attach_source(details)
+                con.execute("INSERT INTO records(category,cycle,payload_json,created_at) VALUES ('application_details',NULL,?,?)",
+                            (json.dumps(details, ensure_ascii=False), t))
             con.execute("UPDATE case_data SET values_json=?,sources_json=?,confirmed_at=NULL,updated_at=? WHERE id=1",
                         (json.dumps(extracted, ensure_ascii=False), json.dumps(sources, ensure_ascii=False), t))
             con.execute("INSERT INTO history(happened_at,action,detail) VALUES (?,?,?)",
@@ -198,6 +214,54 @@ class CaseStore:
             con.execute("UPDATE case_data SET confirmed_at=?,updated_at=? WHERE id=1", (t, t))
             con.execute("INSERT INTO history(happened_at,action,detail) VALUES (?,?,?)",
                         (t, 'confirm', '담당자 건축개요 확인'))
+            con.commit()
+        return self.state()
+
+    def patch_detail(self, section, index, part, field, value):
+        """Whitelisted edit of one extracted draft value; citations stay immutable."""
+        allowed = {
+            'buildings': {'existing': {'building_name','main_use','structure','building_area_m2','floor_area_m2','height_m'},
+                          'proposed': {'main_use','structure','building_area_m2','floor_area_m2','height_m'},
+                          'meta': {'building_name'}},
+            'floors': {'existing': {'area_m2'},
+                       'proposed': {'area_m2','structure','use'},
+                       'meta': {'building_name','floor','work_type'}}
+        }
+        if section not in allowed or part not in allowed[section] or field not in allowed[section][part]:
+            raise ValueError('허용되지 않은 상세항목입니다.')
+        if not isinstance(index,int) or not isinstance(value,str) or len(value)>500:
+            raise ValueError('상세항목 입력값이 올바르지 않습니다.')
+        value=value.strip()
+        with self.lock, self._connect() as con:
+            rec=con.execute("SELECT id,payload_json FROM records WHERE category='application_details' ORDER BY id DESC LIMIT 1").fetchone()
+            if not rec:raise ValueError('저장된 상세정보가 없습니다.')
+            payload=json.loads(rec['payload_json'])
+            rows=payload[section]
+            if not 0<=index<len(rows):raise ValueError('상세항목 번호가 올바르지 않습니다.')
+            row=rows[index]
+            if part=='meta':
+                previous=row.get(field,'')
+                if value!=previous:
+                    row[field]=value
+                    row.setdefault('user_edits',{})[field]=True
+            elif section=='buildings':
+                obj=row[part]
+                prior=obj.get(field,{}).get('value','')
+                if prior!=value:
+                    old_source=obj.get(field,{}).get('source')
+                    obj[field]={'value':value,'source':old_source,'edited_by_user':True}
+            else:
+                obj=row[part]
+                prior=obj.get(field,'')
+                if prior!=value:
+                    obj[field]=value
+                    row.setdefault('user_edits',{})[part+'.'+field]=True
+            t=now()
+            con.execute('UPDATE records SET payload_json=? WHERE id=?',
+                        (json.dumps(payload,ensure_ascii=False),rec['id']))
+            con.execute('UPDATE case_data SET confirmed_at=NULL,updated_at=? WHERE id=1',(t,))
+            con.execute('INSERT INTO history(happened_at,action,detail) VALUES (?,?,?)',
+                        (t,'detail_edit',f'{section}[{index}] {part}.{field} 담당자 수정'))
             con.commit()
         return self.state()
 
