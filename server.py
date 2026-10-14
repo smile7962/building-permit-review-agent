@@ -111,7 +111,7 @@ class Handler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         if parsed.path == '/api/state':
             self._json(200, {'case': store().state(), 'fields': FIELDS,
-                             'ai_available': ai_available(), 'supported': ['.txt','.csv','.pdf','.docx','.xlsx']})
+                             'ai_available': ai_available(), 'supported': ['.txt','.csv','.pdf','.docx','.xls','.xlsx']})
         elif parsed.path == '/api/export':
             state = store().state()
             filename = f"{state['case_id'][:8]}_건축인허가.bcase"
@@ -149,8 +149,8 @@ class Handler(BaseHTTPRequestHandler):
             if not name or len(name) > 150 or '\n' in name or '\r' in name:
                 raise ValueError('파일 이름을 확인하세요.')
             ext = Path(name).suffix.lower()
-            if ext not in {'.txt','.csv','.pdf','.docx','.xlsx'}:
-                raise ValueError('지원 형식은 TXT, CSV, 텍스트 PDF, DOCX, XLSX입니다.')
+            if ext not in {'.txt','.csv','.pdf','.docx','.xls','.xlsx'}:
+                raise ValueError('지원 형식은 TXT, CSV, 텍스트 PDF, DOCX, XLS, XLSX입니다.')
             content = self._read(MAX_UPLOAD)
             consent = qs.get('consent', ['false'])[0] == 'true'
             lines, values, sources, method, warning = parse_application(name, content, FIELD_KEYS, consent)
