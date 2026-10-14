@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-13-v1",
+  "version": "2026-10-14-v2",
   "fields": [
     {
       "key": "permit_type",
@@ -15,7 +15,20 @@
     {
       "key": "work_type",
       "label": "건축 구분",
-      "type": "text"
+      "type": "select",
+      "options": [
+        "",
+        "신축",
+        "증축",
+        "개축",
+        "재축",
+        "이전",
+        "대수선",
+        "허가사항 변경",
+        "신고사항 변경",
+        "용도변경"
+      ],
+      "required": true
     },
     {
       "key": "site_address",
