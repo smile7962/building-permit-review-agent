@@ -1,228 +1,298 @@
-"use strict";
+'use strict';
+const $ = id => document.getElementById(id);
+let current = null;
+let definitions = [];
+let dirty = false;
+let saveTimer = null;
+let saveQueue = Promise.resolve();
+let selectedDoc = null;
+let lastRequest = 0;
 
-const el = id => document.getElementById(id);
-let state = null, fields = [], dirty = false, saveTimer = null, pendingSave = Promise.resolve();
-
-async function api(path, options={}) {
-  const init={method:options.method || "GET"};
-  if(options.json !== undefined) {
-    init.headers={"Content-Type":"application/json"};
-    init.body=JSON.stringify(options.json);
-  } else if(options.raw !== undefined) {
-    init.headers={"Content-Type":"application/octet-stream"};
-    init.body=options.raw;
-  }
-  const response=await fetch(path,init);
-  if(!response.ok) {
-    let reason="요청 오류 ("+response.status+")";
-    try{reason=(await response.json()).error || reason;}catch(_){}
-    throw new Error(reason);
+async function api(path, {method='GET', json, raw}={}) {
+  const options = {method, headers:{}};
+  if (json !== undefined) {options.headers['Content-Type']='application/json';options.body=JSON.stringify(json);}
+  if (raw !== undefined) {options.headers['Content-Type']='application/octet-stream';options.body=raw;}
+  const response = await fetch(path, options);
+  if (!response.ok) {
+    let message = `요청 실패 (${response.status})`;
+    try {message = (await response.json()).error || message;} catch {}
+    throw new Error(message);
   }
   return response.json();
 }
-function message(value,error=false) {
-  const box=el("toast");
-  box.textContent=value;box.hidden=false;box.classList.toggle("error",error);
-  clearTimeout(box._timer);box._timer=setTimeout(()=>{box.hidden=true;},4500);
+function notify(message, isError=false) {
+  const toast=$('toast');toast.textContent=message;toast.classList.toggle('error',isError);toast.hidden=false;
+  clearTimeout(toast._timer);toast._timer=setTimeout(()=>{toast.hidden=true;},4000);
 }
-function indicator(value) {el("saveIndicator").textContent="● "+value;}
-function node(tag,className,text) {
-  const n=document.createElement(tag);
-  if(className)n.className=className;
-  if(text!==undefined)n.textContent=text;
-  return n;
+function indicator(message, type='') {
+  const el=$('saveIndicator');el.textContent='● '+message;el.className='save-indicator'+(type?' '+type:'');
 }
-function formValues() {
-  const values={};
-  for(const spec of fields)values[spec.key]=el("field_"+spec.key).value;
-  return values;
+function valuesFromForm() {
+  const obj={};for(const spec of definitions)obj[spec.key]=$('field_'+spec.key)?.value || '';
+  return obj;
 }
-function counts() {
-  const values=formValues();
-  const completed=Object.values(values).filter(v=>v.trim()).length;
-  el("completeCount").textContent=completed;
-  el("totalCount").textContent=fields.length;
-  const missing=fields.filter(f=>f.required && !values[f.key].trim()).map(f=>f.label);
-  const output=el("validationResult");output.replaceChildren();
-  output.append(node("div","ok","입력 "+completed+"개 / "+fields.length+"개"));
-  if(missing.length)output.append(node("div","warning","필수값 누락: "+missing.join(", ")));
-  else output.append(node("div","ok","필수 항목 입력 완료"));
-  if(completed<fields.length)output.append(node("div","warning","추가 확인 항목: "+(fields.length-completed)+"개"));
-  output.append(node("div","","법령 적합성은 이 단계에서 자동 판단하지 않습니다."));
-}
-function summary() {
-  if(!state)return;
-  el("caseTitle").textContent=state.values.site_address || "새 사건";
-  el("caseId").textContent=state.case_id.slice(0,8);
-  const confirmed=Boolean(state.confirmed_at);
-  el("reviewStatus").textContent=confirmed?"담당자 검토 확정":"검토·확인 필요";
-  el("reviewStatus").classList.toggle("confirmed",confirmed);
-  el("step1Mark").textContent=confirmed?"✓":"●";
-  const area=el("historyItems");area.replaceChildren();
-  for(const item of state.history || []) {
-    const row=node("div","history-item");
-    row.append(node("b","",item.action+" · "+item.happened_at.replace("T"," ").slice(0,16)));
-    row.append(node("span","",item.detail));area.append(row);
-  }
-  counts();
-}
-function edit() {
+function markDirty() {
   dirty=true;
-  if(state)state.confirmed_at=null;
-  summary();indicator("변경사항 저장 중");
-  clearTimeout(saveTimer);
-  saveTimer=setTimeout(()=>persist().catch(e=>message(e.message,true)),650);
+  if(current){current.confirmed_at=null; updateSummary();}
+  indicator('수정 내용 저장 중','pending');
+  clearTimeout(saveTimer);saveTimer=setTimeout(()=>{persist().catch(e=>notify(e.message,true));},650);
 }
 async function persist() {
   clearTimeout(saveTimer);
-  if(!dirty)return pendingSave;
-  const values=formValues();
-  dirty=false;
-  pendingSave=pendingSave.catch(()=>{}).then(async()=>{
-    const result=await api("/api/save",{method:"POST",json:{values}});
-    state=result.case;indicator("로컬 자동저장 완료");summary();
-  }).catch(e=>{dirty=true;indicator("저장 실패");throw e;});
-  return pendingSave;
+  if (!dirty) return saveQueue;
+  const values=valuesFromForm();dirty=false;
+  saveQueue = saveQueue.catch(()=>{}).then(async()=>{
+    const data=await api('/api/save',{method:'POST',json:{values}});
+    current=data.case;
+    indicator('로컬 자동저장 완료');
+    updateSummary();
+  }).catch(error=>{dirty=true;indicator('저장 실패','error');throw error;});
+  return saveQueue;
 }
-function field(spec) {
-  const wrap=node("div","field"+(spec.type==="textarea"?" wide":""));
-  const head=node("div","field-label");
-  const label=node("label","",spec.label+(spec.required?" *":""));
-  label.htmlFor="field_"+spec.key;head.append(label);wrap.append(head);
+function create(tag, className, text) {
+  const el=document.createElement(tag);if(className)el.className=className;
+  if(text!==undefined)el.textContent=text;return el;
+}
+function fieldElement(spec) {
+  const block=create('div', 'field'+(spec.type==='textarea'?' wide':''));
+  const head=create('div','field-label');
+  const label=create('label','',spec.label + (spec.required?' *':''));label.htmlFor='field_'+spec.key;
+  head.append(label);block.append(head);
   let input;
-  if(spec.type==="textarea")input=node("textarea");
-  else if(spec.type==="select") {
-    input=node("select");
-    for(const value of spec.options || []) {
-      const option=node("option","",value || "선택하세요");option.value=value;input.append(option);
+  if(spec.type==='select'){
+    input=create('select');for(const option of spec.options || []){
+      const el=create('option','',option || '선택하세요');el.value=option;input.append(el);
     }
-  } else {
-    input=node("input");input.type="text";
-    if(spec.type==="number" || spec.type==="integer")input.inputMode="decimal";
+  } else if(spec.type==='textarea') input=create('textarea');
+  else {input=create('input');input.type='text';input.inputMode=(spec.type==='number'||spec.type==='integer')?'decimal':'text';}
+  input.id='field_'+spec.key;
+  input.value=current.values?.[spec.key] || '';
+  input.addEventListener('input',()=>{markDirty();updateCounts();});
+  input.addEventListener('change',()=>{markDirty();});
+  block.append(input);
+  const prov=create('div','provenance');
+  const source=current.sources?.[spec.key];
+  if(source && source.line && source.document_id){
+    const ref=create('button','source-ref', `${source.filename} · ${source.where} · ${source.line}번 줄`);
+    ref.type='button';ref.addEventListener('click',()=>showDocument(source.document_id,source.line));prov.append(ref);
+  } else if(source){prov.append(create('span','source-ref disabled','⚠ 추출값 원문 출처 확인 필요'));}
+  else {prov.append(create('span','source-ref disabled','— 원문 출처 없음'));}
+  if(source?.edited_by_user) prov.append(create('span','edited','직접 수정'));
+  block.append(prov);
+  return block;
+}
+function updateCounts() {
+  const values=valuesFromForm();
+  const count=Object.values(values).filter(x=>x.trim()).length;
+  $('completeCount').textContent=String(count);
+  $('totalCount').textContent=String(definitions.length);
+  const required=definitions.filter(x=>x.required && !values[x.key].trim());
+  const lack=definitions.length-count;
+  const val=$('validationResult');val.replaceChildren();
+  const add=(text,cls)=>{const div=create('div',cls,text);val.append(div);};
+  add(`입력 완료: ${count}개 / ${definitions.length}개`,'ok');
+  if(required.length) add('필수값 누락: '+required.map(x=>x.label).join(', '),'warning');
+  else add('필수 항목 입력 완료','ok');
+  if(lack) add('확인 필요 항목: '+lack+'개','warning');
+  const unsupported = Object.values(current?.sources||{}).filter(s=>s.method==='외부 AI 초안'&&!s.line).length;
+  if(unsupported) add('출처 미확인 AI 항목: '+unsupported+'개','warning');
+  add('법령 적용·건폐율 적법성 등은 이 단계에서 판단하지 않습니다.','');
+}
+function updateSummary() {
+  if(!current)return;
+  const vals=current.values||{};
+  $('caseTitle').textContent=vals.site_address || '새 사건';
+  $('caseId').textContent=current.case_id.slice(0,8);
+  const confirmed=Boolean(current.confirmed_at);
+  $('reviewStatus').textContent=confirmed?'담당자 검토 확정':'검토·확인 필요';
+  $('reviewStatus').classList.toggle('confirmed',confirmed);
+  $('step1Mark').textContent=confirmed?'✓':'●';
+  const list=$('historyItems');list.replaceChildren();
+  for(const h of current.history||[]){
+    const row=create('div','history-item');row.append(create('b','',h.action+' · '+h.happened_at.replace('T',' ').slice(0,16)));
+    row.append(create('span','',h.detail));list.append(row);
   }
-  input.id="field_"+spec.key;
-  input.value=state.values[spec.key] || "";
-  input.addEventListener("input",edit);
-  wrap.append(input);
-  const provenance=node("div","provenance");
-  const source=state.sources[spec.key];
-  if(source && source.line && source.document_id) {
-    const button=node("button","source-ref",source.filename+" · "+source.where+" · "+source.line+"번 줄");
-    button.type="button";
-    button.addEventListener("click",()=>showSource(source.document_id,source.line));
-    provenance.append(button);
-  } else provenance.append(node("span","source-ref disabled",source?"⚠ 원문 근거 확인 필요":"— 원문 출처 없음"));
-  if(source && source.edited_by_user)provenance.append(node("span","edited","담당자 수정"));
-  wrap.append(provenance);
-  return wrap;
+  updateCounts();
+}
+// A separate, source-linked draft. Only whitelisted edits are sent to the server.
+async function updateDetail(section,index,part,key,value) {
+  try {
+    await persist();
+    indicator("상세정보 저장 중");
+    const result=await api("/api/detail-update",{method:"POST",json:{section,index,part,field:key,value}});
+    state=result.case;
+    indicator("상세정보 저장됨");
+    renderDetails();summary();
+  }catch(e){indicator("상세정보 저장 실패");message(e.message,true);}
+}
+function detailEditor(section,index,part,key,value,source) {
+  const cell=node("td");
+  const input=node("input","detail-input");
+  input.setAttribute("aria-label", section+" "+(index+1)+" "+part+" "+key);
+  input.value=value||"";
+  input.addEventListener("change",()=>{if(input.value!==(value||""))updateDetail(section,index,part,key,input.value);});
+  cell.append(input);
+  if(source?.edited_by_user)cell.append(node("small","edited","담당자 수정"));
+  return cell;
+}
+function sourceButton(source) {
+  const cell=node("td");
+  if(source?.document_id && source?.line) {
+    const b=node("button","source-ref","원문 "+source.where+" #"+source.line);
+    b.addEventListener("click",()=>showSource(source.document_id,source.line).catch(e=>message(e.message,true)));
+    cell.append(b);
+  }else cell.append(node("span","source-ref disabled","출처 확인 필요"));
+  return cell;
+}
+function bValue(row,part,key) {return row?.[part]?.[key]?.value||"";}
+function renderDetails() {
+  const details=state?.application_details;
+  el("detailsPanel").hidden=!details;
+  if(!details)return;
+  const currentWork=state.values.work_type;
+  el("detailStatus").textContent=currentWork?"건축구분: "+currentWork:"건축구분 확인 필요";
+  const warn=el("detailWarnings");warn.replaceChildren();
+  for(const w of details.warnings||[]) {
+    if(currentWork && w.includes("건축구분"))continue;
+    warn.append(node("p","",w));
+  }
+  const bbody=el("buildingRows"); bbody.replaceChildren();
+  for(const [idx,row] of (details.buildings||[]).entries()) {
+    const tr=node("tr");
+    tr.append(detailEditor("buildings",idx,"meta","building_name",row.building_name));
+    for(const [part,key] of [["existing","main_use"],["proposed","main_use"],
+                ["existing","floor_area_m2"],["proposed","floor_area_m2"],["proposed","structure"]]) {
+      tr.append(detailEditor("buildings",idx,part,key,bValue(row,part,key),row[part]?.[key]));
+    }
+    tr.append(sourceButton(row.source));bbody.append(tr);
+  }
+  if(!details.buildings?.length){const tr=node("tr");const td=node("td","empty","동별 표를 자동 인식하지 못했습니다.");td.colSpan=7;tr.append(td);bbody.append(tr);}
+  const fbody=el("floorRows");fbody.replaceChildren();
+  for(const [idx,row] of (details.floors||[]).entries()) {
+    const tr=node("tr");
+    tr.append(detailEditor("floors",idx,"meta","building_name",row.building_name));
+    tr.append(detailEditor("floors",idx,"meta","floor",row.floor));
+    tr.append(detailEditor("floors",idx,"meta","work_type",row.work_type));
+    tr.append(detailEditor("floors",idx,"existing","area_m2",row.existing?.area_m2));
+    tr.append(detailEditor("floors",idx,"proposed","area_m2",row.proposed?.area_m2));
+    tr.append(detailEditor("floors",idx,"proposed","use",row.proposed?.use));
+    tr.append(sourceButton(row.area_source||row.source));fbody.append(tr);
+  }
+  if(!details.floors?.length){const tr=node("tr");const td=node("td","empty","층별 표를 자동 인식하지 못했습니다.");td.colSpan=7;tr.append(td);fbody.append(tr);}
 }
 function render() {
-  const grid=el("fieldGrid");grid.replaceChildren();
-  for(const spec of fields)grid.append(field(spec));
-  const selector=el("documentSelector");selector.replaceChildren();
-  const docs=state.documents || [];
-  el("sourceEmpty").hidden=docs.length>0;
-  el("sourceContent").hidden=docs.length===0;
-  for(const item of docs) {
-    const option=node("option","",item.filename);option.value=item.id;selector.append(option);
-  }
-  if(docs.length)showSource(docs[0].id).catch(e=>message(e.message,true));
-  else el("sourceLines").replaceChildren();
-  dirty=false;indicator("로컬 작업공간 저장됨");summary();
+  if(!current)return;
+  const grid=$('fieldGrid');grid.replaceChildren();
+  for(const spec of definitions)grid.append(fieldElement(spec));
+  updateSummary();
+  const selector=$('documentSelector');selector.replaceChildren();
+  const docs=current.documents || [];
+  $('sourceEmpty').hidden=docs.length>0;
+  $('sourceContent').hidden=docs.length===0;
+  for(const doc of docs){const op=create('option','',doc.filename);op.value=doc.id;selector.append(op);}
+  indicator('로컬 작업공간 저장됨');
+  if(docs.length){showDocument(docs[0].id).catch(e=>notify(e.message,true));}
+  else{$('sourceLines').replaceChildren();selectedDoc=null;}
 }
-async function showSource(id,highlight=null) {
-  const docId=Number(id);
-  el("documentSelector").value=String(docId);
-  el("downloadOriginal").href="/api/document?id="+encodeURIComponent(docId);
-  const result=await api("/api/document-lines?id="+encodeURIComponent(docId));
-  const lines=result.lines || [];
-  const box=el("sourceLines");box.replaceChildren();
-  let start=0,end=Math.min(260,lines.length);
-  if(highlight) {
-    const found=lines.findIndex(x=>x.n===Number(highlight));
-    if(found>=0){start=Math.max(0,found-35);end=Math.min(lines.length,found+80);}
+async function showDocument(id, targetLine=null) {
+  selectedDoc=Number(id);
+  const requestId=++lastRequest;
+  const doc=current.documents.find(d=>d.id===selectedDoc);
+  if(!doc)return;
+  $('documentSelector').value=String(id);
+  $('downloadOriginal').href='/api/document?id='+encodeURIComponent(id);
+  const data=await api('/api/document-lines?id='+encodeURIComponent(id));
+  if(requestId!==lastRequest)return;
+  const wrap=$('sourceLines');wrap.replaceChildren();
+  const lines=data.lines||[];
+  let start=0,end=Math.min(lines.length,260);
+  if(targetLine){const i=lines.findIndex(x=>x.n===Number(targetLine));if(i>=0){start=Math.max(0,i-40);end=Math.min(lines.length,i+120);}}
+  if(start>0)wrap.append(create('div','empty',`원문 ${start}줄 생략 · 선택한 원문 주변 표시`));
+  for(const item of lines.slice(start,end)){
+    const row=create('div','source-line'+(item.n===Number(targetLine)?' highlight':''));
+    row.id='line_'+item.n;
+    row.append(create('span','line-num', `${item.where} #${item.n}`));
+    row.append(create('span','',item.text));wrap.append(row);
   }
-  if(start)box.append(node("div","empty","앞쪽 원문 "+start+"줄 생략"));
-  for(const line of lines.slice(start,end)) {
-    const selected=line.n===Number(highlight);
-    const item=node("div","source-line"+(selected?" highlight":""));
-    item.id="source_"+line.n;
-    item.append(node("span","line-num",line.where+" #"+line.n));
-    item.append(node("span","",line.text));box.append(item);
-  }
-  if(end<lines.length)box.append(node("div","empty","이후 원문 "+(lines.length-end)+"줄 생략"));
-  if(highlight)el("source_"+highlight)?.scrollIntoView({block:"nearest"});
+  if(end<lines.length)wrap.append(create('div','empty',`나머지 ${lines.length-end}줄 생략`));
+  if(targetLine) $('line_'+targetLine)?.scrollIntoView({block:'nearest',behavior:'smooth'});
 }
-async function upload(file) {
+async function uploadFile(file) {
   if(!file)return;
-  if(file.size>15*1024*1024){message("15MB 이하 파일만 허용됩니다.",true);return;}
-  if((state.documents||[]).length && !confirm("새 파일은 현재 추출값을 대체하지만 기존 원본은 유지됩니다. 계속할까요?"))return;
+  if(file.size>15*1024*1024){notify('신청서는 15MB 이하로 등록하세요.',true);return;}
+  if((current?.documents||[]).length && !confirm('새 신청서를 등록하면 건축개요 추출 초안이 교체됩니다. 기존 원본문서는 보존됩니다. 계속할까요?'))return;
   try{
     await persist();
-    indicator("신청서 분석 중");
-    const url="/api/upload?name="+encodeURIComponent(file.name)+"&consent="+String(el("externalAiConsent").checked);
-    const result=await api(url,{method:"POST",raw:await file.arrayBuffer()});
-    state=result.case;render();
-    message(result.method+"으로 "+result.found+"개 항목을 추출했습니다. 검토 후 확정하세요.");
-    if(result.warning)message(result.warning,true);
-  }catch(e){indicator("분석 실패");message(e.message,true);}
+    const consent=$('externalAiConsent').checked;
+    indicator('신청서 분석 중','pending');
+    const url='/api/upload?name='+encodeURIComponent(file.name)+'&consent='+String(consent);
+    const data=await api(url,{method:'POST',raw:await file.arrayBuffer()});
+    current=data.case;dirty=false;render();
+    notify(`${data.method} · ${data.found}개 항목 추출. 담당자 확인이 필요합니다.`);
+    if(data.warning)notify(data.warning,true);
+  }catch(e){indicator('분석 실패','error');notify(e.message,true);}
 }
-async function openCase(file) {
-  if(!file || !confirm("현재 사건은 .bcase로 저장해야 안전하게 보관됩니다. 기존 사건파일을 열까요?"))return;
+async function openCase(file){
+  if(!file)return;
+  if(!confirm('현재 사건의 임시 작업은 전환됩니다. .bcase를 내보내지 않았다면 먼저 저장하세요. 사건파일을 열까요?'))return;
   try{
     await persist();
-    const result=await api("/api/open",{method:"POST",raw:await file.arrayBuffer()});
-    state=result.case;render();message("사건파일을 불러왔습니다.");
-  }catch(e){message(e.message,true);}
+    const data=await api('/api/open',{method:'POST',raw:await file.arrayBuffer()});
+    current=data.case;dirty=false;render();notify('사건파일을 다시 열었습니다.');
+  }catch(e){notify('열기 실패: '+e.message,true);}
 }
-async function newCase() {
-  if(!confirm("새 사건을 만드시겠습니까? 현재 사건을 먼저 .bcase로 저장하세요."))return;
-  try{await persist();const r=await api("/api/new",{method:"POST"});state=r.case;render();message("새 사건 생성 완료");}
-  catch(e){message(e.message,true);}
-}
-async function exportCase() {
+async function exportCase(){
   try{
     await persist();
-    const response=await fetch("/api/export");
-    if(!response.ok)throw new Error("사건파일 생성 실패");
-    const blob=await response.blob();
-    const disposition=response.headers.get("Content-Disposition") || "";
+    const res=await fetch('/api/export');if(!res.ok)throw new Error('사건파일 생성 실패');
+    const data=await res.blob();
+    const disposition=res.headers.get('Content-Disposition')||'';
     const match=disposition.match(/filename\*=UTF-8''([^;]+)/i);
-    const name=match?decodeURIComponent(match[1]):"건축인허가.bcase";
-    const url=URL.createObjectURL(blob);
-    const link=node("a");link.href=url;link.download=name;
-    document.body.append(link);link.click();link.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),30000);
-    message("사건파일을 다운로드했습니다. 안전한 위치에 보관하세요.");
-  }catch(e){message(e.message,true);}
+    const fileName=match?decodeURIComponent(match[1]):'건축인허가.bcase';
+    const url=URL.createObjectURL(data);const a=create('a');a.href=url;a.download=fileName;
+    document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+    notify('사건파일이 다운로드되었습니다. 파일을 안전한 위치에 보관하세요.');
+  }catch(e){notify(e.message,true);}
 }
-async function confirmFields() {
-  try{await persist();const r=await api("/api/confirm",{method:"POST"});state=r.case;render();message("담당자 검토 확정 완료");}
-  catch(e){message(e.message,true);}
-}
-async function init() {
-  el("newButton").addEventListener("click",newCase);
-  el("exportButton").addEventListener("click",exportCase);
-  el("confirmButton").addEventListener("click",confirmFields);
-  el("openButton").addEventListener("click",()=>el("caseInput").click());
-  el("uploadButton").addEventListener("click",()=>el("applicationInput").click());
-  el("applicationInput").addEventListener("change",e=>{upload(e.target.files[0]);e.target.value="";});
-  el("caseInput").addEventListener("change",e=>{openCase(e.target.files[0]);e.target.value="";});
-  el("documentSelector").addEventListener("change",e=>showSource(e.target.value).catch(err=>message(err.message,true)));
-  const drop=el("dropzone");
-  drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("dragover");});
-  drop.addEventListener("dragleave",()=>drop.classList.remove("dragover"));
-  drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("dragover");upload(e.dataTransfer.files[0]);});
-  document.querySelectorAll(".step").forEach(b=>b.addEventListener("click",()=>{
-    if(b.dataset.step!=="1")message("이 단계는 다음 버전에서 구현합니다.");
-  }));
-  window.addEventListener("beforeunload",e=>{if(dirty){e.preventDefault();e.returnValue="";}});
+async function newCase(){
+  if(!confirm('새 사건을 만들까요? 현재 사건은 .bcase로 저장해야 다른 PC에서 다시 열 수 있습니다.'))return;
   try{
-    const r=await api("/api/state");
-    fields=r.fields;state=r.case;
-    el("externalAiConsent").disabled=!r.ai_available;
-    el("aiMode").textContent=r.ai_available?"외부 AI 연결 가능 · 사용 시 별도 동의":"외부 AI 미연결 · 로컬 분석";
+    await persist();const data=await api('/api/new',{method:'POST'});
+    current=data.case;dirty=false;render();notify('새 사건을 만들었습니다.');
+  }catch(e){notify(e.message,true);}
+}
+async function confirmFields(){
+  try{
+    await persist();const data=await api('/api/confirm',{method:'POST'});
+    current=data.case;render();notify('담당자 검토가 확정되었습니다. 이후 수정하면 다시 검토해야 합니다.');
+  }catch(e){notify(e.message,true);}
+}
+function setup(){
+  $('newButton').addEventListener('click',newCase);
+  $('openButton').addEventListener('click',()=>$('caseInput').click());
+  $('caseInput').addEventListener('change',e=>{openCase(e.target.files?.[0]);e.target.value='';});
+  $('exportButton').addEventListener('click',exportCase);
+  $('confirmButton').addEventListener('click',confirmFields);
+  $('uploadButton').addEventListener('click',()=>$('applicationInput').click());
+  $('applicationInput').addEventListener('change',e=>{uploadFile(e.target.files?.[0]);e.target.value='';});
+  $('documentSelector').addEventListener('change',e=>showDocument(e.target.value).catch(err=>notify(err.message,true)));
+  const dz=$('dropzone');
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragover');});
+  dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
+  dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dragover');uploadFile(e.dataTransfer.files[0]);});
+  document.querySelectorAll('.step').forEach(s=>s.addEventListener('click',()=>{
+    if(s.dataset.step!=='1')notify('해당 단계는 현재 개발 중입니다. Phase 1 검증 후 순차 구현합니다.');
+  }));
+  // Closing the tab does not destroy the local working copy, but export is needed for portability.
+  window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
+}
+async function init(){
+  setup();
+  try{
+    const data=await api('/api/state');current=data.case;definitions=data.fields;
+    $('aiMode').textContent=data.ai_available?'외부 AI 연결 가능 · 사용 시 별도 동의':'외부 AI 연결 안 됨 · 로컬 분석';
+    $('externalAiConsent').disabled=!data.ai_available;
     render();
-  }catch(e){message("초기화 실패: "+e.message,true);}
+  }catch(e){notify('초기화 실패: '+e.message,true);}
 }
 init();
