@@ -1,17 +1,17 @@
 """Run: python -m unittest discover -s tests -v"""
 import json
+import sqlite3
 import tempfile
 import unittest
 from pathlib import Path
 
 from case_store import CaseStore
-from parser import parse_application, extract_lines
+from parser import parse_application, extract_lines, ai_available
 
 ROOT = Path(__file__).resolve().parents[1]
 MASTER = json.loads((ROOT / 'masters' / 'fields.json').read_text(encoding='utf-8'))
 KEYS = {x['key'] for x in MASTER['fields']}
 REQUIRED = [x['key'] for x in MASTER['fields'] if x.get('required')]
-
 
 class Phase1Tests(unittest.TestCase):
     def setUp(self):
@@ -72,6 +72,4 @@ class Phase1Tests(unittest.TestCase):
         self.assertEqual(sources['primary_use']['evidence'], '주용도: 단독주택')
         self.assertEqual(values['permit_type'],'건축신고')
 
-
-if __name__=='__main__':
-    unittest.main()
+if __name__=='__main__': unittest.main()
