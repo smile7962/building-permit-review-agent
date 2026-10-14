@@ -1,4 +1,5 @@
 """End-to-end local HTTP checks without third-party test packages."""
+import hashlib
 import json
 import tempfile
 import threading
@@ -12,7 +13,6 @@ import server
 from case_store import CaseStore
 
 ROOT = Path(__file__).resolve().parents[1]
-
 
 class LocalHttpTests(unittest.TestCase):
     def setUp(self):
@@ -40,9 +40,9 @@ class LocalHttpTests(unittest.TestCase):
         self.assertIn(b'confirmFields',js)
 
     def test_http_case_lifecycle(self):
-        raw_file=(ROOT/'samples'/'sample_application.txt').read_bytes()
+        text=(ROOT/'samples'/'sample_application.txt').read_bytes()
         from urllib.parse import quote
-        raw,_=self.request('/api/upload?name='+quote('sample_application.txt'),method='POST',data=raw_file)
+        raw,_=self.request('/api/upload?name='+quote('sample_application.txt'),method='POST',data=text)
         obj=json.loads(raw)
         self.assertEqual(obj['found'],16)
         self.assertEqual(obj['case']['values']['site_area_m2'],'450.00')
@@ -59,13 +59,11 @@ class LocalHttpTests(unittest.TestCase):
         restored=json.loads(raw)['case']
         self.assertEqual(restored['values']['site_area_m2'],'451.00')
         source,_=self.request('/api/document?id='+str(restored['documents'][0]['id']))
-        self.assertEqual(source,raw_file)
+        self.assertEqual(source,text)
 
     def test_rejects_unsupported_document(self):
         with self.assertRaises(urllib.error.HTTPError) as cm:
             self.request('/api/upload?name=unexpected.exe',method='POST',data=b'hello')
         self.assertEqual(cm.exception.code,400)
 
-
-if __name__=='__main__':
-    unittest.main()
+if __name__=='__main__': unittest.main()
