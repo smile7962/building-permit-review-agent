@@ -18,6 +18,7 @@ from urllib.parse import parse_qs, urlparse, quote
 
 from case_store import CaseStore
 from parser import ai_available, parse_application
+from seumteo_details import extract_details
 
 ROOT = Path(__file__).resolve().parent
 PORT = int(os.environ.get('APP_PORT', '8765'))
@@ -142,6 +143,10 @@ class Handler(BaseHTTPRequestHandler):
         elif parsed.path == '/api/save':
             obj = json.loads(self._read(100 * 1024))
             self._json(200, {'case': store().save_values(obj.get('values'))})
+        elif parsed.path == '/api/detail-update':
+            obj = json.loads(self._read(16 * 1024))
+            self._json(200, {'case': store().patch_detail(obj.get('section'), obj.get('index'),
+                obj.get('part'), obj.get('field'), obj.get('value'))})
         elif parsed.path == '/api/confirm':
             self._json(200, {'case': store().confirm(REQUIRED_KEYS)})
         elif parsed.path == '/api/upload':
@@ -154,9 +159,21 @@ class Handler(BaseHTTPRequestHandler):
             content = self._read(MAX_UPLOAD)
             consent = qs.get('consent', ['false'])[0] == 'true'
             lines, values, sources, method, warning = parse_application(name, content, FIELD_KEYS, consent)
+            # Structured detail extraction applies only to recognisable Seumteo forms.
+            is_seumteo = ext in ('.pdf','.xls','.xlsx','.docx') and any(('허가신청서' in x['text'].replace(' ','') or
+                '(변경)신고서' in x['text'].replace(' ','') or '동별 개요' in x['text']) for x in lines[:100])
+            details = extract_details(lines) if is_seumteo else None
+            # Never trust the unchecked multi-choice form heading or an LLM guess.
+            if details and details['work_type']:
+                values['work_type'] = details['work_type']['value']
+                sources['work_type'] = {**details['work_type']['source'],
+                    'method':'명시적 체크표시', 'edited_by_user':False}
+            elif details and any('건축구분' in x['text'].replace(' ','') for x in lines[:30]):
+                values.pop('work_type', None)
+                sources.pop('work_type', None)
             sha = hashlib.sha256(content).hexdigest()
             mime = mimetypes.guess_type(name)[0] or 'application/octet-stream'
-            case = store().add_application(name, sha, mime, content, lines, values, sources, method)
+            case = store().add_application(name, sha, mime, content, lines, values, sources, method, details)
             self._json(200, {'case': case, 'method': method, 'warning': warning, 'found': len(values)})
         else:
             self._json(404, {'error': '지원하지 않는 API입니다.'})
