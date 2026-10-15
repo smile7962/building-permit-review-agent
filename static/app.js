@@ -95,7 +95,7 @@ function updateCounts() {
   else add('필수 항목 입력 완료','ok');
   if(lack) add('확인 필요 항목: '+lack+'개','warning');
   if((current?.documents||[]).length && !values.building_count?.trim())
-    add('건축물 동수 미확인: 첫 장의 주건축물수를 확인해 직접 입력하세요. 동별 개요에서 임의 계산하지 않습니다.','warning');
+    add('건축물 동수 미확인: 첫 장의 주건축물수를 대조해 직접 입력하세요. 동별 개요로 임의 계산하지 않습니다.','warning');
   const unsupported = Object.values(current?.sources||{}).filter(s=>s.method==='외부 AI 초안'&&!s.line).length;
   if(unsupported) add('출처 미확인 AI 항목: '+unsupported+'개','warning');
   add('법령 적용·건폐율 적법성 등은 이 단계에서 판단하지 않습니다.','');
@@ -122,45 +122,45 @@ async function updateDetail(section,index,part,key,value) {
     await persist();
     indicator("상세정보 저장 중");
     const result=await api("/api/detail-update",{method:"POST",json:{section,index,part,field:key,value}});
-    state=result.case;
+    current=result.case;
     indicator("상세정보 저장됨");
-    renderDetails();summary();
-  }catch(e){indicator("상세정보 저장 실패");message(e.message,true);}
+    renderDetails();updateSummary();
+  }catch(e){indicator("상세정보 저장 실패");notify(e.message,true);}
 }
 function detailEditor(section,index,part,key,value,source) {
-  const cell=node("td");
-  const input=node("input","detail-input");
+  const cell=create("td");
+  const input=create("input","detail-input");
   input.setAttribute("aria-label", section+" "+(index+1)+" "+part+" "+key);
   input.value=value||"";
   input.addEventListener("change",()=>{if(input.value!==(value||""))updateDetail(section,index,part,key,input.value);});
   cell.append(input);
-  if(source?.edited_by_user)cell.append(node("small","edited","담당자 수정"));
+  if(source?.edited_by_user)cell.append(create("small","edited","담당자 수정"));
   return cell;
 }
 function sourceButton(source) {
-  const cell=node("td");
+  const cell=create("td");
   if(source?.document_id && source?.line) {
-    const b=node("button","source-ref","원문 "+source.where+" #"+source.line);
-    b.addEventListener("click",()=>showSource(source.document_id,source.line).catch(e=>message(e.message,true)));
+    const b=create("button","source-ref","원문 "+source.where+" #"+source.line);
+    b.addEventListener("click",()=>showDocument(source.document_id,source.line).catch(e=>notify(e.message,true)));
     cell.append(b);
-  }else cell.append(node("span","source-ref disabled","출처 확인 필요"));
+  }else cell.append(create("span","source-ref disabled","출처 확인 필요"));
   return cell;
 }
 function bValue(row,part,key) {return row?.[part]?.[key]?.value||"";}
 function renderDetails() {
-  const details=state?.application_details;
-  el("detailsPanel").hidden=!details;
+  const details=current?.application_details;
+  $("detailsPanel").hidden=!details;
   if(!details)return;
-  const currentWork=state.values.work_type;
-  el("detailStatus").textContent=currentWork?"건축구분: "+currentWork:"건축구분 확인 필요";
-  const warn=el("detailWarnings");warn.replaceChildren();
+  const currentWork=current.values.work_type;
+  $("detailStatus").textContent=currentWork?"건축구분: "+currentWork:"건축구분 확인 필요";
+  const warn=$("detailWarnings");warn.replaceChildren();
   for(const w of details.warnings||[]) {
     if(currentWork && w.includes("건축구분"))continue;
-    warn.append(node("p","",w));
+    warn.append(create("p","",w));
   }
-  const bbody=el("buildingRows"); bbody.replaceChildren();
+  const bbody=$("buildingRows"); bbody.replaceChildren();
   for(const [idx,row] of (details.buildings||[]).entries()) {
-    const tr=node("tr");
+    const tr=create("tr");
     tr.append(detailEditor("buildings",idx,"meta","building_name",row.building_name));
     for(const [part,key] of [["existing","main_use"],["proposed","main_use"],
                 ["existing","floor_area_m2"],["proposed","floor_area_m2"],["proposed","structure"]]) {
@@ -168,10 +168,10 @@ function renderDetails() {
     }
     tr.append(sourceButton(row.source));bbody.append(tr);
   }
-  if(!details.buildings?.length){const tr=node("tr");const td=node("td","empty","동별 표를 자동 인식하지 못했습니다.");td.colSpan=7;tr.append(td);bbody.append(tr);}
-  const fbody=el("floorRows");fbody.replaceChildren();
+  if(!details.buildings?.length){const tr=create("tr");const td=create("td","empty","동별 표를 자동 인식하지 못했습니다.");td.colSpan=7;tr.append(td);bbody.append(tr);}
+  const fbody=$("floorRows");fbody.replaceChildren();
   for(const [idx,row] of (details.floors||[]).entries()) {
-    const tr=node("tr");
+    const tr=create("tr");
     tr.append(detailEditor("floors",idx,"meta","building_name",row.building_name));
     tr.append(detailEditor("floors",idx,"meta","floor",row.floor));
     tr.append(detailEditor("floors",idx,"meta","work_type",row.work_type));
@@ -180,13 +180,14 @@ function renderDetails() {
     tr.append(detailEditor("floors",idx,"proposed","use",row.proposed?.use));
     tr.append(sourceButton(row.area_source||row.source));fbody.append(tr);
   }
-  if(!details.floors?.length){const tr=node("tr");const td=node("td","empty","층별 표를 자동 인식하지 못했습니다.");td.colSpan=7;tr.append(td);fbody.append(tr);}
+  if(!details.floors?.length){const tr=create("tr");const td=create("td","empty","층별 표를 자동 인식하지 못했습니다.");td.colSpan=7;tr.append(td);fbody.append(tr);}
 }
 function render() {
   if(!current)return;
   const grid=$('fieldGrid');grid.replaceChildren();
   for(const spec of definitions)grid.append(fieldElement(spec));
   updateSummary();
+  renderDetails();renderAiReview();
   const selector=$('documentSelector');selector.replaceChildren();
   const docs=current.documents || [];
   $('sourceEmpty').hidden=docs.length>0;
@@ -219,15 +220,70 @@ async function showDocument(id, targetLine=null) {
   if(end<lines.length)wrap.append(create('div','empty',`나머지 ${lines.length-end}줄 생략`));
   if(targetLine) $('line_'+targetLine)?.scrollIntoView({block:'nearest',behavior:'smooth'});
 }
+
+function renderAiReview(){
+  const ai=current?.ai_review;
+  $('aiReviewEmpty').hidden=Boolean(ai);
+  $('aiReviewContent').hidden=!ai;
+  const button=$('aiRunButton');
+  button.disabled=!aiEnabled || !(current?.documents||[]).length;
+  if(!ai)return;
+  const counts=ai.counts || {};
+  $('aiReviewSummary').textContent=`${ai.model} · 일치 ${counts.same||0} · 불일치 ${counts.different||0} · AI만 제안 ${counts.missing||0} · 근거 재확인 ${counts.needs_evidence||0}`;
+  const tbody=$('aiComparisonRows');tbody.replaceChildren();
+  for(const [key,info] of Object.entries(ai.suggestions||{})){
+    const tr=create('tr');
+    const td=create('td');const c=create('input');c.type='checkbox';c.className='ai-pick';c.value=key;
+    c.disabled=!info.verified;
+    td.append(c);tr.append(td);
+    tr.append(create('td','',info.label));
+    tr.append(create('td','',info.local_value||'—'));
+    tr.append(create('td','',info.value));
+    tr.append(create('td',info.verified?'':'ai-unverified',info.status));
+    const source=create('td');
+    if(info.source?.line && info.source?.document_id){
+      const link=create('button','source-ref',`${info.source.where} #${info.source.line}`);
+      link.type='button';link.addEventListener('click',()=>showDocument(info.source.document_id,info.source.line).catch(e=>notify(e.message,true)));
+      source.append(link);
+    }else source.append(create('span','source-ref disabled','근거 미확인'));
+    tr.append(source);tbody.append(tr);
+  }
+}
+let aiEnabled=false;
+async function runAiReview(){
+  if(!aiEnabled){notify('AI 모델이 설정되지 않았습니다. README의 환경변수 설정을 확인하세요.',true);return;}
+  if(!$('externalAiConsent').checked){notify('모의·비식별 자료임을 확인하고 AI 분석 전송에 동의하세요.',true);return;}
+  const latest=current?.documents?.[0];
+  if(!latest){notify('신청서를 먼저 업로드하세요.',true);return;}
+  try{
+    await persist();
+    $('aiRunButton').disabled=true;indicator('AI 비교 분석 중','pending');
+    const res=await api('/api/ai-review',{method:'POST',json:{document_id:latest.id,consent:true}});
+    current=res.case;renderAiReview();updateSummary();indicator('AI 초안 분석 완료');
+    notify('AI 비교 초안 생성 완료. 원문과 대조한 후 필요한 항목만 선택하세요.');
+  }catch(e){indicator('AI 분석 실패','error');notify(e.message,true);}
+  finally{renderAiReview();}
+}
+async function applyAiReview(){
+  const ai=current?.ai_review;
+  const keys=Array.from(document.querySelectorAll('.ai-pick:checked')).map(x=>x.value);
+  if(!ai || !keys.length){notify('반영할 AI 제안을 선택하세요.',true);return;}
+  if(!confirm('선택한 AI 제안 '+keys.length+'개를 건축개요에 반영하고 기존 검토 확정을 해제할까요?'))return;
+  try{
+    await persist();
+    const res=await api('/api/ai-apply',{method:'POST',json:{run_id:ai.run_id,keys}});
+    current=res.case;render();notify('선택한 '+keys.length+'개 항목을 반영했습니다. 원문과 재대조 후 확정하세요.');
+  }catch(e){notify(e.message,true);}
+}
+
 async function uploadFile(file) {
   if(!file)return;
   if(file.size>15*1024*1024){notify('신청서는 15MB 이하로 등록하세요.',true);return;}
   if((current?.documents||[]).length && !confirm('새 신청서를 등록하면 건축개요 추출 초안이 교체됩니다. 기존 원본문서는 보존됩니다. 계속할까요?'))return;
   try{
     await persist();
-    const consent=$('externalAiConsent').checked;
     indicator('신청서 분석 중','pending');
-    const url='/api/upload?name='+encodeURIComponent(file.name)+'&consent='+String(consent);
+    const url='/api/upload?name='+encodeURIComponent(file.name);
     const data=await api(url,{method:'POST',raw:await file.arrayBuffer()});
     current=data.case;dirty=false;render();
     notify(`${data.method} · ${data.found}개 항목 추출. 담당자 확인이 필요합니다.`);
@@ -275,6 +331,8 @@ function setup(){
   $('caseInput').addEventListener('change',e=>{openCase(e.target.files?.[0]);e.target.value='';});
   $('exportButton').addEventListener('click',exportCase);
   $('confirmButton').addEventListener('click',confirmFields);
+  $('aiRunButton').addEventListener('click',runAiReview);
+  $('aiApplyButton').addEventListener('click',applyAiReview);
   $('uploadButton').addEventListener('click',()=>$('applicationInput').click());
   $('applicationInput').addEventListener('change',e=>{uploadFile(e.target.files?.[0]);e.target.value='';});
   $('documentSelector').addEventListener('change',e=>showDocument(e.target.value).catch(err=>notify(err.message,true)));
@@ -292,8 +350,9 @@ async function init(){
   setup();
   try{
     const data=await api('/api/state');current=data.case;definitions=data.fields;
-    $('aiMode').textContent=data.ai_available?'외부 AI 연결 가능 · 사용 시 별도 동의':'외부 AI 연결 안 됨 · 로컬 분석';
-    $('externalAiConsent').disabled=!data.ai_available;
+    aiEnabled=Boolean(data.ai_available);
+    $('aiMode').textContent=aiEnabled?`${data.ai_mode==='local'?'로컬':'외부'} AI 연결 가능 · 별도 실행`:'AI 미연결 · 규칙 분석 가능';
+    $('externalAiConsent').disabled=!aiEnabled;
     render();
   }catch(e){notify('초기화 실패: '+e.message,true);}
 }

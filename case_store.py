@@ -134,7 +134,12 @@ class CaseStore:
             history = con.execute("SELECT happened_at,action,detail FROM history ORDER BY id DESC LIMIT 12").fetchall()
             master_version = con.execute("SELECT value FROM metadata WHERE key='master_version'").fetchone()[0]
             detail_row = con.execute("SELECT payload_json FROM records WHERE category='application_details' ORDER BY id DESC LIMIT 1").fetchone()
+            ai_row = con.execute("SELECT payload_json FROM records WHERE category='ai_review' ORDER BY id DESC LIMIT 1").fetchone()
+            ai = json.loads(ai_row[0]) if ai_row else None
+            if not documents or (ai and ai.get('document_id') != documents[0]['id']):
+                ai = None
             return {
+                'ai_review': ai,
                 'case_id': row['case_id'],
                 'values': json.loads(row['values_json']),
                 'sources': json.loads(row['sources_json']),
@@ -263,6 +268,53 @@ class CaseStore:
             con.execute('INSERT INTO history(happened_at,action,detail) VALUES (?,?,?)',
                         (t,'detail_edit',f'{section}[{index}] {part}.{field} 담당자 수정'))
             con.commit()
+        return self.state()
+
+    def record_ai_review(self, result, document_id):
+        """Keep model output as a separate, unapproved draft in the case file."""
+        with self.lock, self._connect() as con:
+            latest = con.execute('SELECT id,filename FROM documents ORDER BY id DESC LIMIT 1').fetchone()
+            if not latest or latest['id'] != document_id:
+                raise ValueError('최근 업로드한 신청서에서만 AI 분석을 실행할 수 있습니다.')
+            payload = {**result, 'document_id': document_id}
+            for candidate in payload['suggestions'].values():
+                src = candidate['source']
+                src['document_id'] = document_id
+                src['filename'] = latest['filename']
+            t = now()
+            con.execute("INSERT INTO records(category,cycle,payload_json,created_at) VALUES ('ai_review',NULL,?,?)",
+                        (json.dumps(payload,ensure_ascii=False),t))
+            con.execute('INSERT INTO history(happened_at,action,detail) VALUES (?,?,?)',
+                        (t,'ai_review',f"AI 비교 초안 생성 ({len(payload['suggestions'])}항목, 자동반영 없음)"))
+        return self.state()
+
+    def apply_ai_review(self, run_id, keys):
+        """Only specifically selected, source-verified AI candidates can be applied."""
+        if not isinstance(keys,list) or not keys or len(keys)>len(self.field_keys):
+            raise ValueError('반영할 AI 제안 항목을 선택하세요.')
+        if len(keys)!=len(set(keys)) or not set(keys).issubset(self.field_keys):
+            raise ValueError('AI 반영 항목이 올바르지 않습니다.')
+        with self.lock, self._connect() as con:
+            row=con.execute("SELECT payload_json FROM records WHERE category='ai_review' ORDER BY id DESC LIMIT 1").fetchone()
+            latest=con.execute('SELECT id FROM documents ORDER BY id DESC LIMIT 1').fetchone()
+            if not row or not latest:
+                raise ValueError('AI 분석 결과가 없습니다.')
+            ai=json.loads(row[0])
+            if ai.get('run_id')!=run_id or ai.get('document_id')!=latest['id']:
+                raise ValueError('AI 결과가 현재 신청서와 일치하지 않습니다. 다시 분석하세요.')
+            selections={k:ai['suggestions'].get(k) for k in keys}
+            if any(not entry or not entry['verified'] for entry in selections.values()):
+                raise ValueError('원문 근거가 확인된 AI 제안만 반영할 수 있습니다.')
+            before=con.execute('SELECT values_json,sources_json FROM case_data WHERE id=1').fetchone()
+            values=json.loads(before['values_json']); sources=json.loads(before['sources_json'])
+            for key,candidate in selections.items():
+                values[key]=candidate['value']
+                sources[key]=candidate['source']
+            t=now()
+            con.execute('UPDATE case_data SET values_json=?,sources_json=?,confirmed_at=NULL,updated_at=? WHERE id=1',
+                        (json.dumps(values,ensure_ascii=False),json.dumps(sources,ensure_ascii=False),t))
+            con.execute('INSERT INTO history(happened_at,action,detail) VALUES (?,?,?)',
+                        (t,'ai_apply','담당자 선택 AI 항목 반영: '+', '.join(keys)))
         return self.state()
 
     def document(self, docid):
