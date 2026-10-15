@@ -177,6 +177,9 @@ def parse_seumteo(lines, allowed_keys):
                     break
             set_value('site_address',district+(' '+lot if lot else ''),row,
                       explanation='대지위치 및 지번 대조')
+            if lot and 'site_address' in sources:
+                sources['site_address']['evidence']=row['text']+' / 지번 '+lot
+                sources['site_address']['lot_line']=first_page[j+1]['n']
             break
 
     # Use the overall Ⅰ.전체 개요 count only if numerically populated.
