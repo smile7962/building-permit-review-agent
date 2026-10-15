@@ -33,7 +33,7 @@
         <button class="step" data-step="8"><span class="step-num">08</span><span><strong>검토조서</strong><small>최종 검토초안</small></span><span class="lock">준비중</span></button>
         <button class="step" data-step="9"><span class="step-num">09</span><span><strong>처리공문</strong><small>처리결과 문서</small></span><span class="lock">준비중</span></button>
       </nav>
-      <div class="sidebar-footer"><span>Phase 1 / v0.1.4</span><small>현재: 신청정보 구조화 기능</small></div>
+      <div class="sidebar-footer"><span>Phase 1 / v0.1.5</span><small>현재: 신청정보 구조화 기능</small></div>
     </aside>
     <main class="main">
       <div class="page-heading"><div><div class="eyebrow">STEP 01 · 신청서 분석</div><h1>신청정보 확인</h1><p>신청서를 등록하고 자동 추출된 항목을 원문과 대조하여 확정합니다.</p></div><span class="status" id="reviewStatus">검토 전</span></div>
@@ -41,7 +41,20 @@
         <div class="upload-icon">⇧</div><div class="upload-copy"><strong>세움터 신청서 업로드</strong><span>파일을 끌어다 놓거나, 파일을 선택하세요.</span><small>TXT · CSV · PDF(문자형) · DOCX · XLS · XLSX / 15MB 이하</small></div>
         <button class="btn outline" id="uploadButton">파일 선택</button><input id="applicationInput" type="file" accept=".txt,.csv,.pdf,.docx,.xls,.xlsx" hidden>
       </section>
-      <div class="option-row"><label><input type="checkbox" id="externalAiConsent"> 외부 AI로 문서 분석 허용 (민감자료 사용 금지)</label><span id="aiMode">로컬 분석 기본값</span></div>
+      <div class="option-row"><label><input type="checkbox" id="externalAiConsent"> 합성·비식별 신청서임을 확인하고 AI 분석용 텍스트 전송에 동의합니다</label><span id="aiMode">로컬 규칙 분석 기본값</span></div>
+      <section class="panel ai-compare" aria-label="AI 비교 분석">
+        <div class="panel-heading"><div><h2>AI 분석 · 원문 근거 비교</h2><span>규칙 기반 값은 유지한 채 AI 제안을 별도로 분석하고 항목별로 확인합니다.</span></div>
+          <button class="btn outline" id="aiRunButton" disabled>✦ AI 비교 분석</button></div>
+        <div class="ai-compare-body">
+          <p class="ai-safety">외부 AI는 합성·비식별 테스트 자료에서만 사용하세요. 실제 민원 원본은 외부 AI로 전송하지 마세요. AI 분석 시 신청서의 추출 텍스트 일부가 연결된 모델로 전송됩니다. AI가 제안한 값은 자동 반영되지 않습니다.</p>
+          <div id="aiReviewEmpty" class="empty">AI 연결 전에도 기존 규칙 분석은 정상 동작합니다. AI 연결 후 체크박스를 선택하고 분석 버튼을 누르면 항목별 차이를 볼 수 있습니다.</div>
+          <div id="aiReviewContent" hidden>
+            <div class="ai-result-head"><span id="aiReviewSummary"></span><button class="btn primary" id="aiApplyButton" type="button">선택 항목 반영</button></div>
+            <div class="detail-scroll"><table class="detail-table ai-result-table"><thead><tr><th>선택</th><th>항목</th><th>규칙 기반</th><th>AI 제안</th><th>비교</th><th>출처 확인</th></tr></thead><tbody id="aiComparisonRows"></tbody></table></div>
+            <small>‘근거 재확인’ 제안은 반영할 수 없습니다. AI 제안 반영 후에는 담당자 검토 확정을 다시 해야 합니다.</small>
+          </div>
+        </div>
+      </section>
       <section class="panel">
         <div class="panel-heading"><div><h2>건축개요</h2><span>자동 추출 정보 · 담당자 직접 수정 가능</span></div><div class="panel-count"><b id="completeCount">0</b> / <span id="totalCount">16</span> 항목 입력</div></div>
         <div id="fieldGrid" class="field-grid"></div>
