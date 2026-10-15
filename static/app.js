@@ -94,6 +94,8 @@ function updateCounts() {
   if(required.length) add('필수값 누락: '+required.map(x=>x.label).join(', '),'warning');
   else add('필수 항목 입력 완료','ok');
   if(lack) add('확인 필요 항목: '+lack+'개','warning');
+  if((current?.documents||[]).length && !values.building_count?.trim())
+    add('건축물 동수 미확인: 첫 장의 주건축물수를 확인해 직접 입력하세요. 동별 개요에서 임의 계산하지 않습니다.','warning');
   const unsupported = Object.values(current?.sources||{}).filter(s=>s.method==='외부 AI 초안'&&!s.line).length;
   if(unsupported) add('출처 미확인 AI 항목: '+unsupported+'개','warning');
   add('법령 적용·건폐율 적법성 등은 이 단계에서 판단하지 않습니다.','');
