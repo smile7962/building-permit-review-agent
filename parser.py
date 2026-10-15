@@ -74,17 +74,23 @@ def extract_lines(filename, data):
         for i, page in enumerate(reader.pages, start=1):
             append_text(page.extract_text() or '', f'{i}쪽')
             if i == 1:
+                # Seumteo ticks can be drawn as PDF vectors and are invisible
+                # to ordinary text extraction. Never guess if ambiguous.
                 try:
                     from pdf_vectors import checked_work_type
-                    choice = checked_work_type(page)
+                    chosen = checked_work_type(page)
                 except (ValueError, TypeError, IndexError):
-                    choice = None
-                if choice:
-                    out.append({'n': len(out)+1,
-                                'text': '건축구분: ' + choice['value'],
-                                'where': '1쪽 · PDF 벡터 체크표시',
-                                'evidence_note': choice['evidence'],
-                                'kind': 'graphic_inspection'})
+                    chosen = None
+                if chosen:
+                    # A clearly labelled graphic-derived inspection record,
+                    # not a literal quote from the document's text layer.
+                    out.append({
+                        'n': len(out) + 1,
+                        'text': '건축구분: ' + chosen['value'],
+                        'where': '1쪽 · PDF 벡터 체크표시',
+                        'evidence_note': chosen['evidence'],
+                        'kind': 'graphic_inspection'
+                    })
     elif ext == '.docx':
         _zip_safety(data)
         try:
@@ -112,13 +118,17 @@ def extract_lines(filename, data):
             append_text(text, f'{sheet} {row_number}행')
             out[-1]['cells'] = cells
         from xls_markers import checked_work_type
-        choice = checked_work_type(data)
-        if choice:
-            out.append({'n': len(out)+1,
-                        'text': '건축구분: ' + choice['value'],
-                        'where': 'Page 1 · XLS 그림 체크표시',
-                        'evidence_note': choice['evidence'],
-                        'kind': 'graphic_inspection'})
+        chosen = checked_work_type(data)
+        if chosen:
+            # The visible check is a picture object and was absent from the
+            # original extracted text. Mark the derived row transparently.
+            out.append({
+                'n': len(out) + 1,
+                'text': '건축구분: ' + chosen['value'],
+                'where': 'Page 1 · XLS 그림 체크표시',
+                'evidence_note': chosen['evidence'],
+                'kind': 'graphic_inspection'
+            })
     elif ext == '.xlsx':
         _zip_safety(data)
         try:
@@ -269,15 +279,5 @@ def parse_application(filename, data, allowed_keys, consent=False):
     values.update(form_values)
     sources.update(form_sources)
     method, warning = '규칙 기반', ''
-    if consent and ai_available():
-        try:
-            ai_values, ai_sources = ai_parse(lines, allowed_keys)
-            # Keep grounded rule matches when AI lacks source, or when an AI field is missing.
-            for k, val in ai_values.items():
-                if ai_sources[k]['line'] is not None:
-                    values[k], sources[k] = val, ai_sources[k]
-            method = '규칙 + 외부 AI'
-        except Exception as e:
-            # Do not lose the user file or local extraction if the provider fails.
-            warning = f'외부 AI 호출 실패 · 규칙 기반 초안 유지 ({type(e).__name__})'
+    # AI runs separately through /api/ai-review and never silently overwrites values.
     return lines, values, sources, method, warning
