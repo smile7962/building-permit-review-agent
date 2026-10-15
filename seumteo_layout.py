@@ -160,6 +160,38 @@ def parse_seumteo(lines, allowed_keys):
                         break
                 break
 
+    # PDF first-page site and lot must come from their labelled rows.
+    if 'site_address' not in values:
+        for i, row in enumerate(first_page):
+            m=re.match(r'^\s*대지\s*위치\s*[:：]?\s*(.+)$',row['text'])
+            if not m: continue
+            district=m.group(1).strip()
+            if not district: continue
+            lot=''
+            for j in range(i+1,min(i+6,len(first_page))):
+                if re.fullmatch(r'\s*지\s*번\s*', first_page[j]['text']):
+                    if j+1<len(first_page):
+                        raw=first_page[j+1]['text'].strip()
+                        if re.fullmatch(r'\d{1,5}\s*(?:-\s*\d{1,5})?',raw):
+                            lot=re.sub(r'\s*-\s*','-',raw)
+                    break
+            set_value('site_address',district+(' '+lot if lot else ''),row,
+                      explanation='대지위치 및 지번 대조')
+            if lot and 'site_address' in sources:
+                sources['site_address']['evidence']=row['text']+' / 지번 '+lot
+                sources['site_address']['lot_line']=first_page[j+1]['n']
+            break
+
+    # Use the overall Ⅰ.전체 개요 count only if numerically populated.
+    if 'building_count' not in values:
+        for row in first_page:
+            if '주건축물수' not in norm(row['text']): continue
+            m=re.search(r'주\s*건축물\s*수\s*(\d{1,3})\s*동(?:\s|$)',row['text'])
+            if m:
+                set_value('building_count',m.group(1),row,
+                          explanation='전체 개요 명시적 주건축물수')
+            break
+
     # The primary use is often printed directly BELOW ⑤주용도 instead of after
     # a colon. Preserve its own first-page source, not a later building use.
     if 'primary_use' not in values:

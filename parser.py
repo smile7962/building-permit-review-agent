@@ -73,6 +73,18 @@ def extract_lines(filename, data):
             raise ValueError('PDF는 최대 80쪽까지 처리할 수 있습니다.')
         for i, page in enumerate(reader.pages, start=1):
             append_text(page.extract_text() or '', f'{i}쪽')
+            if i == 1:
+                try:
+                    from pdf_vectors import checked_work_type
+                    choice = checked_work_type(page)
+                except (ValueError, TypeError, IndexError):
+                    choice = None
+                if choice:
+                    out.append({'n': len(out)+1,
+                                'text': '건축구분: ' + choice['value'],
+                                'where': '1쪽 · PDF 벡터 체크표시',
+                                'evidence_note': choice['evidence'],
+                                'kind': 'graphic_inspection'})
     elif ext == '.docx':
         _zip_safety(data)
         try:
@@ -99,6 +111,14 @@ def extract_lines(filename, data):
             text = ' | '.join(c['text'] for c in cells)
             append_text(text, f'{sheet} {row_number}행')
             out[-1]['cells'] = cells
+        from xls_markers import checked_work_type
+        choice = checked_work_type(data)
+        if choice:
+            out.append({'n': len(out)+1,
+                        'text': '건축구분: ' + choice['value'],
+                        'where': 'Page 1 · XLS 그림 체크표시',
+                        'evidence_note': choice['evidence'],
+                        'kind': 'graphic_inspection'})
     elif ext == '.xlsx':
         _zip_safety(data)
         try:
