@@ -179,6 +179,16 @@ def parse_seumteo(lines, allowed_keys):
                       explanation='대지위치 및 지번 대조')
             break
 
+    # Use the overall Ⅰ.전체 개요 count only if numerically populated.
+    if 'building_count' not in values:
+        for row in first_page:
+            if '주건축물수' not in norm(row['text']): continue
+            m=re.search(r'주\s*건축물\s*수\s*(\d{1,3})\s*동(?:\s|$)',row['text'])
+            if m:
+                set_value('building_count',m.group(1),row,
+                          explanation='전체 개요 명시적 주건축물수')
+            break
+
     # The primary use is often printed directly BELOW ⑤주용도 instead of after
     # a colon. Preserve its own first-page source, not a later building use.
     if 'primary_use' not in values:
