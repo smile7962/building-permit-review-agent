@@ -160,6 +160,25 @@ def parse_seumteo(lines, allowed_keys):
                         break
                 break
 
+    # PDF first-page site and lot must come from their labelled rows.
+    if 'site_address' not in values:
+        for i, row in enumerate(first_page):
+            m=re.match(r'^\s*대지\s*위치\s*[:：]?\s*(.+)$',row['text'])
+            if not m: continue
+            district=m.group(1).strip()
+            if not district: continue
+            lot=''
+            for j in range(i+1,min(i+6,len(first_page))):
+                if re.fullmatch(r'\s*지\s*번\s*', first_page[j]['text']):
+                    if j+1<len(first_page):
+                        raw=first_page[j+1]['text'].strip()
+                        if re.fullmatch(r'\d{1,5}\s*(?:-\s*\d{1,5})?',raw):
+                            lot=re.sub(r'\s*-\s*','-',raw)
+                    break
+            set_value('site_address',district+(' '+lot if lot else ''),row,
+                      explanation='대지위치 및 지번 대조')
+            break
+
     # The primary use is often printed directly BELOW ⑤주용도 instead of after
     # a colon. Preserve its own first-page source, not a later building use.
     if 'primary_use' not in values:
