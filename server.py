@@ -19,6 +19,7 @@ from urllib.parse import parse_qs, urlparse, quote
 from case_store import CaseStore
 from parser import ai_available, parse_application
 from seumteo_details import extract_details
+from ai_review import ai_config, compare_ai
 
 ROOT = Path(__file__).resolve().parent
 PORT = int(os.environ.get('APP_PORT', '8765'))
@@ -41,7 +42,7 @@ def store():
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'BuildingPermitReview/0.1.4'
+    server_version = 'BuildingPermitReview/0.1.5'
 
     def _headers(self, status, mime='application/json; charset=utf-8', size=None, more=None):
         self.send_response(status)
@@ -112,7 +113,7 @@ class Handler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         if parsed.path == '/api/state':
             self._json(200, {'case': store().state(), 'fields': FIELDS,
-                             'ai_available': ai_available(), 'supported': ['.txt','.csv','.pdf','.docx','.xls','.xlsx']})
+                             'ai_available': ai_config()['available'], 'ai_mode': ai_config()['mode'], 'supported': ['.txt','.csv','.pdf','.docx','.xls','.xlsx']})
         elif parsed.path == '/api/export':
             state = store().state()
             filename = f"{state['case_id'][:8]}_건축인허가.bcase"
@@ -147,6 +148,23 @@ class Handler(BaseHTTPRequestHandler):
             obj = json.loads(self._read(16 * 1024))
             self._json(200, {'case': store().patch_detail(obj.get('section'), obj.get('index'),
                 obj.get('part'), obj.get('field'), obj.get('value'))})
+        elif parsed.path == '/api/ai-review':
+            obj = json.loads(self._read(4 * 1024))
+            if obj.get('consent') is not True:
+                raise ValueError('AI 전송에 대한 명시적 동의가 필요합니다.')
+            doc_id = obj.get('document_id')
+            if not isinstance(doc_id,int):
+                raise ValueError('분석할 신청서가 없습니다.')
+            state = store().state()
+            if not state['documents'] or doc_id != state['documents'][0]['id']:
+                raise ValueError('가장 최근 신청서를 분석해야 합니다.')
+            doc = store().document(doc_id)
+            lines = json.loads(doc['extracted_lines_json'])
+            draft = compare_ai(lines, state['values'], FIELD_KEYS)
+            self._json(200, {'case': store().record_ai_review(draft, doc_id)})
+        elif parsed.path == '/api/ai-apply':
+            obj = json.loads(self._read(4 * 1024))
+            self._json(200, {'case': store().apply_ai_review(obj.get('run_id'),obj.get('keys'))})
         elif parsed.path == '/api/confirm':
             self._json(200, {'case': store().confirm(REQUIRED_KEYS)})
         elif parsed.path == '/api/upload':
@@ -157,8 +175,8 @@ class Handler(BaseHTTPRequestHandler):
             if ext not in {'.txt','.csv','.pdf','.docx','.xls','.xlsx'}:
                 raise ValueError('지원 형식은 TXT, CSV, 텍스트 PDF, DOCX, XLS, XLSX입니다.')
             content = self._read(MAX_UPLOAD)
-            consent = qs.get('consent', ['false'])[0] == 'true'
-            lines, values, sources, method, warning = parse_application(name, content, FIELD_KEYS, consent)
+            # Upload is always local; AI analysis requires a separate opt-in request.
+            lines, values, sources, method, warning = parse_application(name, content, FIELD_KEYS, False)
             # Structured detail extraction applies only to recognisable Seumteo forms.
             is_seumteo = ext in ('.pdf','.xls','.xlsx','.docx') and any(('허가신청서' in x['text'].replace(' ','') or
                 '(변경)신고서' in x['text'].replace(' ','') or '동별 개요' in x['text']) for x in lines[:100])
@@ -182,7 +200,7 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     store()
     httpd = ThreadingHTTPServer(('127.0.0.1', PORT), Handler)
-    print(f'건축인허가 AI 지원 v0.1.4 실행: http://127.0.0.1:{PORT}', flush=True)
+    print(f'건축인허가 AI 지원 v0.1.5 실행: http://127.0.0.1:{PORT}', flush=True)
     print('로컬 PC에서만 접근 가능합니다. 종료: Ctrl+C', flush=True)
     if os.environ.get('APP_NO_BROWSER') != '1':
         threading.Timer(0.8, lambda: webbrowser.open(f'http://127.0.0.1:{PORT}')).start()
