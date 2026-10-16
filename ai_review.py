@@ -147,7 +147,7 @@ def compare_ai(lines, local_values, allowed_keys, *, transport=None, config=None
         grounded=bool(verified) and norm in _normal(evidence)
         if key=='work_type':
             grounded=grounded and any(('graphic_inspection' == item.get('kind') or
-                                        re.search(r'건축구분\s*[:：]',item['text'])) for item in verified)
+                                        re.search(r'건축\s*구분\s*[:：]',item['text'])) for item in verified)
         local=local_values.get(key,'')
         match=bool(local) and _normal(local)==norm
         status=('일치' if match else '불일치' if local else 'AI만 제안') if grounded else '근거 재확인'
