@@ -11,3 +11,7 @@
 .ai-result-table .ai-unverified{color:#aa4b34;font-weight:600}
 .ai-result-table input[type=checkbox]{width:16px;height:16px;cursor:pointer}
 .ai-compare small{display:block;margin-top:10px;color:#71829c}
+
+/* Phase 1.6: distinguish offline fixture simulation from actual LLM calls. */
+.ai-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.ai-actions button{white-space:normal}

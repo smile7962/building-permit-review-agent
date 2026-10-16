@@ -44,14 +44,14 @@
       <div class="option-row"><label><input type="checkbox" id="externalAiConsent"> 합성·비식별 신청서임을 확인하고 AI 분석용 텍스트 전송에 동의합니다</label><span id="aiMode">로컬 규칙 분석 기본값</span></div>
       <section class="panel ai-compare" aria-label="AI 비교 분석">
         <div class="panel-heading"><div><h2>AI 분석 · 원문 근거 비교</h2><span>규칙 기반 값은 유지한 채 AI 제안을 별도로 분석하고 항목별로 확인합니다.</span></div>
-          <button class="btn outline" id="aiRunButton" disabled>✦ AI 비교 분석</button></div>
+          <div class="ai-actions"><button class="btn outline" id="demoRunButton" type="button" disabled>모의 비교 체험 (외부 전송 없음)</button><button class="btn outline" id="aiRunButton" disabled>✦ 실제 AI 비교 분석</button></div></div>
         <div class="ai-compare-body">
-          <p class="ai-safety">외부 AI는 합성·비식별 테스트 자료에서만 사용하세요. 실제 민원 원본은 외부 AI로 전송하지 마세요. AI 분석 시 신청서의 추출 텍스트 일부가 연결된 모델로 전송됩니다. AI가 제안한 값은 자동 반영되지 않습니다.</p>
-          <div id="aiReviewEmpty" class="empty">AI 연결 전에도 기존 규칙 분석은 정상 동작합니다. AI 연결 후 체크박스를 선택하고 분석 버튼을 누르면 항목별 차이를 볼 수 있습니다.</div>
+          <p class="ai-safety">모의 비교는 동봉된 sample_application.txt로만 작동하며 실제 AI를 호출하지 않습니다. 외부 AI는 합성·비식별 테스트 자료에서만 사용하세요. 실제 민원 원본은 외부 AI로 전송하지 마세요. AI 분석 시 신청서의 추출 텍스트 일부가 연결된 모델로 전송됩니다. AI가 제안한 값은 자동 반영되지 않습니다.</p>
+          <div id="aiReviewEmpty" class="empty">API 키 없이도 동봉된 sample_application.txt를 업로드하고 ‘모의 비교 체험’을 선택하면 비교표를 시험할 수 있습니다. 모의 결과는 실제 AI 성능이 아닙니다.</div>
           <div id="aiReviewContent" hidden>
             <div class="ai-result-head"><span id="aiReviewSummary"></span><button class="btn primary" id="aiApplyButton" type="button">선택 항목 반영</button></div>
             <div class="detail-scroll"><table class="detail-table ai-result-table"><thead><tr><th>선택</th><th>항목</th><th>규칙 기반</th><th>AI 제안</th><th>비교</th><th>출처 확인</th></tr></thead><tbody id="aiComparisonRows"></tbody></table></div>
-            <small>‘근거 재확인’ 제안은 반영할 수 없습니다. AI 제안 반영 후에는 담당자 검토 확정을 다시 해야 합니다.</small>
+            <small>‘근거 재확인’ 제안은 반영할 수 없습니다. 모의 비교는 실제 AI 성능이 아니며, 제안 반영 후에는 담당자 검토를 다시 확정해야 합니다.</small>
           </div>
         </div>
       </section>
