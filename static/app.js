@@ -227,9 +227,10 @@ function renderAiReview(){
   $('aiReviewContent').hidden=!ai;
   const button=$('aiRunButton');
   button.disabled=!aiEnabled || !(current?.documents||[]).length;
+  $('demoRunButton').disabled=current?.documents?.[0]?.sha256 !== demoSha256;
   if(!ai)return;
   const counts=ai.counts || {};
-  $('aiReviewSummary').textContent=`${ai.model} · 일치 ${counts.same||0} · 불일치 ${counts.different||0} · AI만 제안 ${counts.missing||0} · 근거 재확인 ${counts.needs_evidence||0}`;
+  $('aiReviewSummary').textContent=`${ai.mode==='demo'?'[실제 AI 아님] ':''}${ai.model} · 일치 ${counts.same||0} · 불일치 ${counts.different||0} · AI만 제안 ${counts.missing||0} · 근거 재확인 ${counts.needs_evidence||0}`;
   const tbody=$('aiComparisonRows');tbody.replaceChildren();
   for(const [key,info] of Object.entries(ai.suggestions||{})){
     const tr=create('tr');
@@ -250,6 +251,19 @@ function renderAiReview(){
   }
 }
 let aiEnabled=false;
+let demoSha256='';
+async function runDemoReview(){
+  const latest=current?.documents?.[0];
+  if(!latest){notify('먼저 동봉된 모의 신청서를 업로드하세요.',true);return;}
+  try{
+    await persist();
+    $('demoRunButton').disabled=true;indicator('모의 비교 중','pending');
+    const res=await api('/api/demo-review',{method:'POST',json:{document_id:latest.id}});
+    current=res.case;renderAiReview();updateSummary();indicator('모의 비교 초안 생성 완료');
+    notify('모의 응답 비교표입니다. 실제 AI 모델은 호출하지 않았습니다.');
+  }catch(e){indicator('모의 비교 실패','error');notify(e.message,true);}
+  finally{renderAiReview();}
+}
 async function runAiReview(){
   if(!aiEnabled){notify('AI 모델이 설정되지 않았습니다. README의 환경변수 설정을 확인하세요.',true);return;}
   if(!$('externalAiConsent').checked){notify('모의·비식별 자료임을 확인하고 AI 분석 전송에 동의하세요.',true);return;}
@@ -332,6 +346,7 @@ function setup(){
   $('exportButton').addEventListener('click',exportCase);
   $('confirmButton').addEventListener('click',confirmFields);
   $('aiRunButton').addEventListener('click',runAiReview);
+  $('demoRunButton').addEventListener('click',runDemoReview);
   $('aiApplyButton').addEventListener('click',applyAiReview);
   $('uploadButton').addEventListener('click',()=>$('applicationInput').click());
   $('applicationInput').addEventListener('change',e=>{uploadFile(e.target.files?.[0]);e.target.value='';});
@@ -350,7 +365,7 @@ async function init(){
   setup();
   try{
     const data=await api('/api/state');current=data.case;definitions=data.fields;
-    aiEnabled=Boolean(data.ai_available);
+    aiEnabled=Boolean(data.ai_available);demoSha256=data.demo_sha256||'';
     $('aiMode').textContent=aiEnabled?`${data.ai_mode==='local'?'로컬':'외부'} AI 연결 가능 · 별도 실행`:'AI 미연결 · 규칙 분석 가능';
     $('externalAiConsent').disabled=!aiEnabled;
     render();
