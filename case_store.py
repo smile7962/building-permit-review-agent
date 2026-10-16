@@ -285,7 +285,7 @@ class CaseStore:
             con.execute("INSERT INTO records(category,cycle,payload_json,created_at) VALUES ('ai_review',NULL,?,?)",
                         (json.dumps(payload,ensure_ascii=False),t))
             con.execute('INSERT INTO history(happened_at,action,detail) VALUES (?,?,?)',
-                        (t,'ai_review',f"AI 비교 초안 생성 ({len(payload['suggestions'])}항목, 자동반영 없음)"))
+                        (t,'ai_review',f"{'모의 비교' if payload.get('mode') == 'demo' else 'AI 비교'} 초안 생성 ({len(payload['suggestions'])}항목, 자동반영 없음)"))
         return self.state()
 
     def apply_ai_review(self, run_id, keys):
@@ -314,7 +314,7 @@ class CaseStore:
             con.execute('UPDATE case_data SET values_json=?,sources_json=?,confirmed_at=NULL,updated_at=? WHERE id=1',
                         (json.dumps(values,ensure_ascii=False),json.dumps(sources,ensure_ascii=False),t))
             con.execute('INSERT INTO history(happened_at,action,detail) VALUES (?,?,?)',
-                        (t,'ai_apply','담당자 선택 AI 항목 반영: '+', '.join(keys)))
+                        (t,'ai_apply',('담당자 선택 모의 항목 반영: ' if ai.get('mode') == 'demo' else '담당자 선택 AI 항목 반영: ')+', '.join(keys)))
         return self.state()
 
     def document(self, docid):
