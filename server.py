@@ -46,7 +46,7 @@ def store():
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'BuildingPermitReview/0.1.9'
+    server_version = 'BuildingPermitReview/0.1.9.1'
 
     def _headers(self, status, mime='application/json; charset=utf-8', size=None, more=None):
         self.send_response(status)
@@ -238,7 +238,7 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     store()
     httpd = ThreadingHTTPServer(('127.0.0.1', PORT), Handler)
-    print(f'건축인허가 AI 지원 v0.1.9 실행: http://127.0.0.1:{PORT}', flush=True)
+    print(f'건축인허가 AI 지원 v0.1.9.1 실행: http://127.0.0.1:{PORT}', flush=True)
     print('로컬 PC에서만 접근 가능합니다. 종료: Ctrl+C', flush=True)
     if os.environ.get('APP_NO_BROWSER') != '1':
         threading.Timer(0.8, lambda: webbrowser.open(f'http://127.0.0.1:{PORT}')).start()
