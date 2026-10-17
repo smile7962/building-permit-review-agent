@@ -31,3 +31,7 @@
 .benchmark-table th,.benchmark-table td{text-align:left;padding:9px 6px;border-bottom:1px solid #e9edf3}
 .benchmark-table th{color:#576984;background:#f6f8fc}
 .benchmark-issues{color:#9a5e2b;overflow-wrap:anywhere}
+
+/* Phase 1.8 API link status; credentials are never rendered. */
+.api-connection-body{padding:14px 20px;color:var(--muted,#59667a);font-size:13px;line-height:1.6}
+@media(max-width:880px){.api-connection .panel-heading{flex-wrap:wrap;gap:12px}}

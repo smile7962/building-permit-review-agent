@@ -9,6 +9,7 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from ai_review import ai_config, compare_ai
 from parser import parse_application
+from synthetic_gate import require_bundled_fixture_integrity
 
 ROOT = Path(__file__).resolve().parent
 BENCHMARK_DIR = ROOT / 'benchmarks'
@@ -86,6 +87,7 @@ def run_benchmark(mode='rules', *, consent=False, allowed_keys=None, transport=N
     keys = set(allowed_keys or manifest['cases'][0]['expected'].keys())
     keys.update({'building_count', 'zoning'})
     if mode == 'ai':
+        require_bundled_fixture_integrity()
         config = config or ai_config()
         if not config['available']:
             raise ValueError('실제 AI 평가를 실행하려면 모델 설정이 필요합니다. 규칙 기반 평가는 별도로 가능합니다.')

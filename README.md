@@ -198,3 +198,14 @@ v0.1.6 사용자 검증에서 모의 비교, 항목 선택 반영 및 .bcase 저
 5. 실제 AI 버튼이 모델 미연결 상태에서 비활성화된 것을 확인
 
 실제 모델 승인 및 API 키를 준비한 경우에만 `python benchmark.py --mode ai --confirm-synthetic-send`가 가능합니다. API 키는 GitHub나 .bcase에 저장하지 마세요.
+
+
+## Phase 1.8 — 외부 AI API 연결 안전성 보강 (2026-10-17)
+
+- 신규 `start_ai_windows.bat` / `start_ai_windows.ps1`: API 키를 숨김 입력해 세션 환경변수로 전달하며 디스크에 저장하지 않음. 기존 `start_windows.bat`은 로컬 모드 유지.
+- 신규 `API 연결 테스트 (1회 호출)`: 별도 동의 후 합성 고정 문구만 Chat Completions API로 전송; 사건 파일 접근 없음.
+- 신규 `synthetic_gate.py`: 배포 시 동봉된 합성 TXT의 고정 SHA-256 5개 이외 문서에 대한 외부 API 추출을 차단. 합성 정량평가 시 자료 무결성 확인.
+- `ai_review.py`: 신형 모델에서 비호환일 수 있는 `temperature=0` 옵션 제거, `store=false`, 출력 토큰 상한, 401/403/404/429와 네트워크 오류의 민감정보 없는 안내.
+- 78개 자동 테스트(기존 68 + 신규 10). 테스트는 모의 API 응답을 사용했으며 실제 API 키로 외부 호출하지 않음.
+- Windows 설치, 이용요금, 동의, 실제 시험 순서는 `AI_API_연결_가이드.md` 참조. ChatGPT 구독료와 API 사용료는 별도.
+- 실제 민원자료 전송은 금지합니다. 실제 Windows 브라우저 조작 및 모델 4건 평가 결과는 아직 사용자 검증 전입니다.
