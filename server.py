@@ -46,7 +46,7 @@ def store():
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'BuildingPermitReview/0.1.8'
+    server_version = 'BuildingPermitReview/0.1.9'
 
     def _headers(self, status, mime='application/json; charset=utf-8', size=None, more=None):
         self.send_response(status)
@@ -118,7 +118,7 @@ class Handler(BaseHTTPRequestHandler):
         if parsed.path == '/api/state':
             self._json(200, {'case': store().state(), 'fields': FIELDS,
                              'ai_available': ai_config()['available'], 'ai_mode': ai_config()['mode'],
-                             'ai_model': ai_config()['model'], 'ai_provider': 'OpenAI 호환 Chat Completions',
+                             'ai_model': ai_config()['model'], 'ai_provider': ai_config()['provider'],
                              'demo_sha256': DEMO_SHA256, 'supported': ['.txt','.csv','.pdf','.docx','.xls','.xlsx']})
         elif parsed.path == '/api/export':
             state = store().state()
@@ -238,7 +238,7 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     store()
     httpd = ThreadingHTTPServer(('127.0.0.1', PORT), Handler)
-    print(f'건축인허가 AI 지원 v0.1.8 실행: http://127.0.0.1:{PORT}', flush=True)
+    print(f'건축인허가 AI 지원 v0.1.9 실행: http://127.0.0.1:{PORT}', flush=True)
     print('로컬 PC에서만 접근 가능합니다. 종료: Ctrl+C', flush=True)
     if os.environ.get('APP_NO_BROWSER') != '1':
         threading.Timer(0.8, lambda: webbrowser.open(f'http://127.0.0.1:{PORT}')).start()
