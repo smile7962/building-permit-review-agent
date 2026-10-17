@@ -33,18 +33,71 @@ FIELD_LABELS = {
 }
 
 
-def ai_config():
-    model = os.environ.get('AI_MODEL','').strip()
-    mode = os.environ.get('AI_MODE','').lower()
-    endpoint = os.environ.get('AI_BASE_URL','https://api.openai.com/v1').rstrip('/')
-    parsed = urllib.parse.urlsplit(endpoint)
-    local = parsed.scheme == 'http' and parsed.hostname in ('127.0.0.1','localhost')
-    secure = (parsed.scheme == 'https' and bool(parsed.hostname) and not parsed.username and not parsed.password
-              and not parsed.query and not parsed.fragment)
-    available = mode == 'on' and bool(model) and (local or (secure and bool(os.environ.get('AI_API_KEY'))))
-    return {'available': available, 'mode': 'local' if local else 'external',
-            'model':model if available else '', 'base_url':endpoint if available else ''}
+GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/openai'
+OPENAI_ENDPOINT = 'https://api.openai.com/v1'
+GEMINI_DEFAULT_MODEL = 'gemini-3.1-flash-lite'
+OPENAI_DEFAULT_MODEL = 'gpt-4.1-mini'
 
+
+def ai_config():
+    """Gemini is the default; only the chosen provider receives its API key."""
+    provider = os.environ.get('AI_PROVIDER', '').strip().lower()
+    raw_endpoint = os.environ.get('AI_BASE_URL', '').strip().rstrip('/')
+    if not provider:
+        provider = ('openai' if raw_endpoint == OPENAI_ENDPOINT else
+                    'compatible' if raw_endpoint and raw_endpoint != GEMINI_ENDPOINT else 'gemini')
+    if provider not in ('gemini', 'openai', 'compatible'):
+        raise ValueError('AI_PROVIDER는 gemini, openai, compatible 중 하나여야 합니다.')
+    default_url = GEMINI_ENDPOINT if provider == 'gemini' else OPENAI_ENDPOINT
+    endpoint = raw_endpoint or default_url
+    parsed = urllib.parse.urlsplit(endpoint)
+    local = (parsed.scheme == 'http' and parsed.hostname in ('127.0.0.1', 'localhost')
+             and not parsed.username and not parsed.password)
+    secure = (parsed.scheme == 'https' and bool(parsed.hostname)
+              and not parsed.username and not parsed.password
+              and not parsed.query and not parsed.fragment)
+    approved = (provider == 'compatible' or local or
+                (provider == 'gemini' and endpoint == GEMINI_ENDPOINT) or
+                (provider == 'openai' and endpoint == OPENAI_ENDPOINT))
+    if not approved and os.environ.get('AI_MODE', '').lower() == 'on':
+        raise ValueError('AI 제공자와 API 주소가 일치하지 않습니다. Gemini와 OpenAI 공식 주소만 허용합니다.')
+    key_name = ('GEMINI_API_KEY' if provider == 'gemini' else
+                'OPENAI_API_KEY' if provider == 'openai' else 'AI_API_KEY')
+    key = os.environ.get(key_name) or os.environ.get('AI_API_KEY', '')
+    default_model = GEMINI_DEFAULT_MODEL if provider == 'gemini' else OPENAI_DEFAULT_MODEL
+    model = os.environ.get('AI_MODEL', '').strip() or default_model
+    available = (os.environ.get('AI_MODE', '').lower() == 'on' and bool(model)
+                 and approved and (local or (secure and bool(key))))
+    return {'available': available, 'mode': 'local' if local else 'external',
+            'provider': provider, 'model': model if available else '',
+            'base_url': endpoint if available else ''}
+
+
+def _get_provider_key(config):
+    provider = config.get('provider') or ('gemini' if
+        urllib.parse.urlsplit(config.get('base_url', '')).hostname ==
+        'generativelanguage.googleapis.com' else 'openai')
+    if provider == 'gemini':
+        return os.environ.get('GEMINI_API_KEY') or os.environ.get('AI_API_KEY', '')
+    if provider == 'openai':
+        return os.environ.get('OPENAI_API_KEY') or os.environ.get('AI_API_KEY', '')
+    return os.environ.get('AI_API_KEY', '')
+
+
+def _is_gemini(config):
+    return (config.get('provider') == 'gemini' or
+            urllib.parse.urlsplit(config.get('base_url', '')).hostname ==
+            'generativelanguage.googleapis.com')
+
+
+def _request_options(config, max_completion_tokens):
+    """Avoid OpenAI-only storage option for Gemini's compatibility bridge."""
+    opts = {'model': config['model'], 'max_completion_tokens': max_completion_tokens}
+    if _is_gemini(config):
+        opts['reasoning_effort'] = 'low'
+    else:
+        opts['store'] = False
+    return opts
 
 def _protect_content(lines, is_external=True):
     if not lines:
@@ -73,7 +126,7 @@ def _protect_content(lines, is_external=True):
     return result
 
 
-def _no_redirect_request(request, timeout=25):
+def _no_redirect_request(request, timeout=65):
     class NoRedirect(urllib.request.HTTPRedirectHandler):
         def redirect_request(self,*args,**kwargs):
             raise ValueError('AI 주소가 다른 서버로 리디렉션되어 요청을 차단했습니다.')
@@ -89,7 +142,7 @@ def _call_llm(config, excerpts, allowed_keys, transport=None):
              "출력은 {\"fields\":{\"키\":\"값\"},\"source_lines\":{\"키\":[근거 ID]}} 형식 JSON 하나만 반환하세요. "
              "출처 ID는 반드시 입력에 있는 id를 사용하세요. 확인 불가능한 항목은 제외하세요.")
     system = intro + " 허용 필드: " + json.dumps({k:FIELD_LABELS.get(k,k) for k in sorted(allowed_keys)},ensure_ascii=False)
-    payload={'model':config['model'],'store':False,'max_completion_tokens':2500,
+    payload={**_request_options(config,2500),
              'messages':[{'role':'system','content':system},
                          {'role':'user','content':json.dumps(excerpts,ensure_ascii=False,separators=(',',':'))}]}
     return _post_chat_completion(config, payload, transport)
@@ -104,9 +157,18 @@ def _post_chat_completion(config, payload, transport=None):
         raise ValueError('외부 AI 서버는 HTTPS 연결만 허용합니다.')
     if parsed.scheme not in ('https', 'http') or parsed.username or parsed.password:
         raise ValueError('유효하지 않은 AI API 주소입니다.')
+    service = config.get('provider') or (
+        'gemini' if parsed.hostname == 'generativelanguage.googleapis.com' else
+        'openai' if parsed.hostname == 'api.openai.com' else 'compatible')
+    target = config['base_url'].rstrip('/')
+    if service == 'gemini' and target != GEMINI_ENDPOINT:
+        raise ValueError('Gemini API 키를 Google 공식 서버가 아닌 주소에 전송할 수 없습니다.')
+    if service == 'openai' and target != OPENAI_ENDPOINT:
+        raise ValueError('OpenAI API 키를 공식 서버가 아닌 주소에 전송할 수 없습니다.')
     headers = {'Content-Type': 'application/json'}
-    if os.environ.get('AI_API_KEY'):
-        headers['Authorization'] = 'Bearer ' + os.environ['AI_API_KEY']
+    key = _get_provider_key(config)
+    if key:
+        headers['Authorization'] = 'Bearer ' + key
     request = urllib.request.Request(
         endpoint, data=json.dumps(payload, ensure_ascii=False).encode('utf-8'),
         headers=headers, method='POST')
@@ -135,7 +197,7 @@ def test_ai_connection(config=None, transport=None):
     config = config or ai_config()
     if not config['available']:
         raise ValueError('AI 설정이 없습니다. AI 실행 스크립트로 시작하거나 모델 설정을 확인하세요.')
-    payload = {'model': config['model'], 'store': False, 'max_completion_tokens': 40,
+    payload = {**_request_options(config,128 if _is_gemini(config) else 40),
                'messages': [{'role': 'system', 'content': 'This is an API connectivity test. No user document was provided.'},
                             {'role': 'user', 'content': 'Reply with the token PING_OK.'}]}
     response = _post_chat_completion(config, payload, transport)
@@ -146,7 +208,7 @@ def test_ai_connection(config=None, transport=None):
     if not isinstance(answer, str) or not answer.strip():
         raise ValueError('인증은 응답했으나 내용이 비어 있습니다. 다른 모델을 선택하거나 응답 토큰 한도를 확인하세요.')
     usage = response.get('usage') if isinstance(response, dict) else None
-    return {'connected': True, 'model': config['model'], 'requests': 1,
+    return {'connected': True, 'model': config['model'], 'provider': config.get('provider','openai'), 'requests': 1,
             'sent_document': False,
             'usage_tokens': usage.get('total_tokens') if isinstance(usage, dict) else None,
             'notice': '연결만 확인했습니다. 실제 신청서 추출 정확도 시험은 별도로 진행해야 합니다.'}
