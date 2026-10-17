@@ -252,6 +252,7 @@ function renderAiReview(){
 }
 let aiEnabled=false;
 let demoSha256='';
+let currentBenchmark=null;
 async function runDemoReview(){
   const latest=current?.documents?.[0];
   if(!latest){notify('먼저 동봉된 모의 신청서를 업로드하세요.',true);return;}
@@ -277,6 +278,61 @@ async function runAiReview(){
     notify('AI 비교 초안 생성 완료. 원문과 대조한 후 필요한 항목만 선택하세요.');
   }catch(e){indicator('AI 분석 실패','error');notify(e.message,true);}
   finally{renderAiReview();}
+}
+function renderBenchmark(report){
+  currentBenchmark=report;
+  const box=$('benchmarkOutput');box.replaceChildren();
+  box.append(create('div','benchmark-header',
+    report.rules.summary.cases+'건 / 정답 '+report.rules.summary.expected_fields+'항목 · 합성자료 전용'));
+  for(const [mode,label] of [['rules','규칙 기반 분석'],['ai','실제 LLM 분석']]){
+    if(!report[mode])continue;
+    const result=report[mode],s=result.summary,c=s.counts;
+    const panel=create('div','benchmark-summary');
+    panel.append(create('strong','',label+(mode==='ai'?' · '+result.model:'')));
+    panel.append(create('span','benchmark-accuracy',s.accuracy+'%'));
+    panel.append(create('span','',
+      '정확 '+c.correct+' / 오답 '+c.wrong+' / 누락 '+c.missing+' / 근거미확인 '+c.unverified+' / 공란 오입력 '+c.extra));
+    box.append(panel);
+    const details=create('details','benchmark-details');
+    details.append(create('summary','',label+' · 신청서별 세부 결과 펼치기'));
+    const table=create('table','benchmark-table');
+    const thead=create('thead');const hrow=create('tr');
+    for(const txt of ['시험 서식','정답 항목','정확','오답','누락','근거미확인'])hrow.append(create('th','',txt));
+    thead.append(hrow);table.append(thead);
+    const body=create('tbody');
+    for(const row of result.cases){
+      const tr=create('tr');const z=row.score.counts;
+      for(const txt of [row.description,String(row.score.expected_fields),String(z.correct),String(z.wrong),String(z.missing),String(z.unverified)])tr.append(create('td','',txt));
+      body.append(tr);
+      const bad=row.score.fields.filter(x=>!['correct','empty_correct'].includes(x.status));
+      if(bad.length){
+        const errrow=create('tr');
+        const cell=create('td','benchmark-issues',bad.map(x=>x.field+': '+x.status+
+           ' (정답 '+(x.expected??'공란')+' / 결과 '+(x.observed??'공란')+')').join(' · '));
+        cell.colSpan=6;errrow.append(cell);body.append(errrow);
+      }
+    }
+    table.append(body);details.append(table);box.append(details);
+  }
+  box.append(create('p','benchmark-disclaimer',report.notice));
+  if(report.mode==='rules')box.append(create('p','benchmark-disclaimer',
+    '실제 AI 결과는 아직 없습니다. 실제 AI 모델을 연결하면 같은 정답으로 비교할 수 있습니다.'));
+}
+async function runBenchmark(mode){
+  if(mode==='ai'){
+    if(!aiEnabled){notify('실제 AI 모델 설정이 필요합니다.',true);return;}
+    if(!$('externalAiConsent').checked){notify('합성 시험자료 전송 동의란을 먼저 체크하세요.',true);return;}
+    if(!confirm('내장 합성 신청서 4건의 추출 텍스트만 AI 모델에 전송합니다. 모델 비용이 최대 4회 발생할 수 있습니다. 계속할까요?'))return;
+  }
+  const button=$(mode==='ai'?'benchAiButton':'benchRulesButton');
+  const oldText=button.textContent;
+  button.disabled=true;button.textContent='평가 진행 중...';
+  try{
+    const report=await api('/api/benchmark',{method:'POST',json:{mode,consent:mode==='ai'}});
+    renderBenchmark(report);
+    notify(mode==='ai'?'실제 AI 모델의 합성자료 성능 평가 완료':'로컬 규칙 분석 성능 평가 완료');
+  }catch(e){notify('평가 실패: '+e.message,true);}
+  finally{button.disabled=(mode==='ai'&&!aiEnabled);button.textContent=oldText;}
 }
 async function applyAiReview(){
   const ai=current?.ai_review;
@@ -347,6 +403,8 @@ function setup(){
   $('confirmButton').addEventListener('click',confirmFields);
   $('aiRunButton').addEventListener('click',runAiReview);
   $('demoRunButton').addEventListener('click',runDemoReview);
+  $('benchRulesButton').addEventListener('click',()=>runBenchmark('rules'));
+  $('benchAiButton').addEventListener('click',()=>runBenchmark('ai'));
   $('aiApplyButton').addEventListener('click',applyAiReview);
   $('uploadButton').addEventListener('click',()=>$('applicationInput').click());
   $('applicationInput').addEventListener('change',e=>{uploadFile(e.target.files?.[0]);e.target.value='';});
@@ -366,6 +424,7 @@ async function init(){
   try{
     const data=await api('/api/state');current=data.case;definitions=data.fields;
     aiEnabled=Boolean(data.ai_available);demoSha256=data.demo_sha256||'';
+    $('benchAiButton').disabled=!aiEnabled;
     $('aiMode').textContent=aiEnabled?`${data.ai_mode==='local'?'로컬':'외부'} AI 연결 가능 · 별도 실행`:'AI 미연결 · 규칙 분석 가능';
     $('externalAiConsent').disabled=!aiEnabled;
     render();
