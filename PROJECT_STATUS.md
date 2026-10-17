@@ -119,3 +119,10 @@
 - 기존 68개 + 신규 10개 자동 테스트를 모의 전송으로 검증. 실제 API 키/민원자료 전송 없음.
 - 이후 사용자 확인: Windows v0.1.8 실행, 실제 API 1회 연결시험, 4건 합성자료 정확도 평가.
 - 실제 세움터 PDF/XLS에 대한 모델 정확도 및 기관 보안승인 미완료.
+
+## Phase 1.9 — Google Gemini API 기본값 (2026-10-17)
+- AI 실행 스크립트에서 Gemini 기본, OpenAI 선택 유지. Gemini 기본 모델 gemini-3.1-flash-lite와 공식 호환 URL.
+- Gemini 키를 저장하지 않는 PowerShell 숨김 입력, 공급자별 키 선택 및 공식 엔드포인트 일치 확인.
+- Google 무료 티어의 제한과 제품개선 사용 고지를 사용자 가이드에 추가.
+- 일반 로컬 모드, 외부 합성자료 전송 차단, human-in-loop .bcase 관리 유지.
+- 실제 API 키로 Gemini 서버 호출은 사용자 PC 검증 단계로 남음.
