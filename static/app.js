@@ -439,7 +439,7 @@ async function init(){
     aiEnabled=Boolean(data.ai_available);demoSha256=data.demo_sha256||'';
     $('benchAiButton').disabled=!aiEnabled;
     $('apiConnectTestButton').disabled=!aiEnabled;
-    $('aiConnectionModel').textContent=aiEnabled?'연결 설정 완료 · '+(data.ai_model||'모델 미지정'):'AI 서버 미연결 · 기존 로컬 분석 이용 가능';
+    $('aiConnectionModel').textContent=aiEnabled?'연결 설정 완료 · '+(data.ai_provider==='gemini'?'Google Gemini':data.ai_provider==='openai'?'OpenAI':'호환 API')+' · '+(data.ai_model||'모델 미지정'):'AI 서버 미연결 · 기본 서비스 Gemini · 로컬 규칙 분석 가능';
     $('aiMode').textContent=aiEnabled?`${data.ai_mode==='local'?'로컬':'외부'} AI 연결 가능 · 별도 실행`:'AI 미연결 · 규칙 분석 가능';
     $('externalAiConsent').disabled=!aiEnabled;
     render();
