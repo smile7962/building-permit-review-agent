@@ -4,6 +4,9 @@ Remote providers accept only clearly labelled synthetic examples by default. A r
 screen is additional defense, not a substitute for an agency security review.
 """
 import json
+import urllib.error
+import socket
+import ssl
 import os
 import re
 import urllib.request
@@ -36,7 +39,8 @@ def ai_config():
     endpoint = os.environ.get('AI_BASE_URL','https://api.openai.com/v1').rstrip('/')
     parsed = urllib.parse.urlsplit(endpoint)
     local = parsed.scheme == 'http' and parsed.hostname in ('127.0.0.1','localhost')
-    secure = parsed.scheme == 'https' and bool(parsed.hostname) and not parsed.username and not parsed.password
+    secure = (parsed.scheme == 'https' and bool(parsed.hostname) and not parsed.username and not parsed.password
+              and not parsed.query and not parsed.fragment)
     available = mode == 'on' and bool(model) and (local or (secure and bool(os.environ.get('AI_API_KEY'))))
     return {'available': available, 'mode': 'local' if local else 'external',
             'model':model if available else '', 'base_url':endpoint if available else ''}
@@ -85,23 +89,67 @@ def _call_llm(config, excerpts, allowed_keys, transport=None):
              "출력은 {\"fields\":{\"키\":\"값\"},\"source_lines\":{\"키\":[근거 ID]}} 형식 JSON 하나만 반환하세요. "
              "출처 ID는 반드시 입력에 있는 id를 사용하세요. 확인 불가능한 항목은 제외하세요.")
     system = intro + " 허용 필드: " + json.dumps({k:FIELD_LABELS.get(k,k) for k in sorted(allowed_keys)},ensure_ascii=False)
-    payload={'model':config['model'],'temperature':0,
+    payload={'model':config['model'],'store':False,'max_completion_tokens':2500,
              'messages':[{'role':'system','content':system},
                          {'role':'user','content':json.dumps(excerpts,ensure_ascii=False,separators=(',',':'))}]}
+    return _post_chat_completion(config, payload, transport)
+
+
+def _post_chat_completion(config, payload, transport=None):
     if transport is not None:
         return transport(payload)
-    endpoint=config['base_url']+'/chat/completions'
-    parsed=urllib.parse.urlsplit(endpoint)
-    if parsed.scheme == 'http' and parsed.hostname not in ('127.0.0.1','localhost'):
+    endpoint = config['base_url'] + '/chat/completions'
+    parsed = urllib.parse.urlsplit(endpoint)
+    if parsed.scheme == 'http' and parsed.hostname not in ('127.0.0.1', 'localhost'):
         raise ValueError('외부 AI 서버는 HTTPS 연결만 허용합니다.')
-    if parsed.scheme not in ('https','http'):
+    if parsed.scheme not in ('https', 'http') or parsed.username or parsed.password:
         raise ValueError('유효하지 않은 AI API 주소입니다.')
-    headers={'Content-Type':'application/json'}
+    headers = {'Content-Type': 'application/json'}
     if os.environ.get('AI_API_KEY'):
-        headers['Authorization']='Bearer '+os.environ['AI_API_KEY']
-    request=urllib.request.Request(endpoint,data=json.dumps(payload,ensure_ascii=False).encode('utf-8'),
-                                   headers=headers,method='POST')
-    return _no_redirect_request(request)
+        headers['Authorization'] = 'Bearer ' + os.environ['AI_API_KEY']
+    request = urllib.request.Request(
+        endpoint, data=json.dumps(payload, ensure_ascii=False).encode('utf-8'),
+        headers=headers, method='POST')
+    try:
+        return _no_redirect_request(request)
+    except urllib.error.HTTPError as exc:
+        explanations = {
+            400: '요청 형식이나 모델 옵션을 확인하세요.',
+            401: 'API 키가 잘못되었거나 만료되었습니다.',
+            403: 'API 사용 권한 또는 프로젝트 설정을 확인하세요.',
+            404: '모델 이름 또는 API URL을 확인하세요.',
+            408: 'AI 서비스의 응답이 지연되었습니다.',
+            429: '사용 한도·결제 잔액·요청 속도 제한을 확인하세요.',
+        }
+        desc = explanations.get(exc.code, '공급자 상태와 모델 접근 권한을 확인하세요.')
+        # Never display provider response body: it can echo user content or secrets.
+        raise ValueError(f'AI API 요청 실패 (HTTP {exc.code}): {desc}') from None
+    except (urllib.error.URLError, TimeoutError, socket.timeout, ssl.SSLError, OSError):
+        raise ValueError('AI 서버 연결 실패: 네트워크, TLS 인증서, 방화벽 또는 API URL을 확인하세요.') from None
+    except (json.JSONDecodeError, UnicodeError):
+        raise ValueError('AI API 응답이 올바른 JSON이 아닙니다. 공급자 호환성을 확인하세요.') from None
+
+
+def test_ai_connection(config=None, transport=None):
+    """Single user-triggered minimal synthetic request. Never uses a case or document."""
+    config = config or ai_config()
+    if not config['available']:
+        raise ValueError('AI 설정이 없습니다. AI 실행 스크립트로 시작하거나 모델 설정을 확인하세요.')
+    payload = {'model': config['model'], 'store': False, 'max_completion_tokens': 40,
+               'messages': [{'role': 'system', 'content': 'This is an API connectivity test. No user document was provided.'},
+                            {'role': 'user', 'content': 'Reply with the token PING_OK.'}]}
+    response = _post_chat_completion(config, payload, transport)
+    try:
+        answer = response['choices'][0]['message']['content']
+    except (TypeError, KeyError, IndexError):
+        raise ValueError('연결은 되었지만 Chat Completions 응답 형식이 올바르지 않습니다.') from None
+    if not isinstance(answer, str) or not answer.strip():
+        raise ValueError('인증은 응답했으나 내용이 비어 있습니다. 다른 모델을 선택하거나 응답 토큰 한도를 확인하세요.')
+    usage = response.get('usage') if isinstance(response, dict) else None
+    return {'connected': True, 'model': config['model'], 'requests': 1,
+            'sent_document': False,
+            'usage_tokens': usage.get('total_tokens') if isinstance(usage, dict) else None,
+            'notice': '연결만 확인했습니다. 실제 신청서 추출 정확도 시험은 별도로 진행해야 합니다.'}
 
 
 def _normal(value):
