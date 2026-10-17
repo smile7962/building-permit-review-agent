@@ -318,6 +318,18 @@ function renderBenchmark(report){
   if(report.mode==='rules')box.append(create('p','benchmark-disclaimer',
     '실제 AI 결과는 아직 없습니다. 실제 AI 모델을 연결하면 같은 정답으로 비교할 수 있습니다.'));
 }
+async function testApiConnection(){
+  if(!aiEnabled){notify('먼저 AI 연결 실행 스크립트에서 API를 설정하세요.',true);return;}
+  if(!confirm('문서를 전혀 보내지 않고 고정된 시험 문장으로 API를 1회 호출합니다. 소액 비용이 발생할 수 있습니다. 진행할까요?'))return;
+  const btn=$('apiConnectTestButton');btn.disabled=true;
+  const panel=$('apiConnectionResult');panel.textContent='AI 연결을 시험하고 있습니다...';
+  try{
+    const data=await api('/api/ai-connect-test',{method:'POST',json:{consent:true}});
+    panel.textContent=`연결 성공 · 모델: ${data.result.model} · 문서 전송 없음 · 호출 ${data.result.requests}회${data.result.usage_tokens != null?' · 토큰 '+data.result.usage_tokens:''}. 실제 추출 성능은 별도로 평가합니다.`;
+    notify('API 인증·통신 확인 완료. 다음으로 합성자료 성능 평가를 진행하세요.');
+  }catch(e){panel.textContent='연결 실패: '+e.message;notify('AI API 연결 실패: '+e.message,true);}
+  finally{btn.disabled=!aiEnabled;}
+}
 async function runBenchmark(mode){
   if(mode==='ai'){
     if(!aiEnabled){notify('실제 AI 모델 설정이 필요합니다.',true);return;}
@@ -405,6 +417,7 @@ function setup(){
   $('demoRunButton').addEventListener('click',runDemoReview);
   $('benchRulesButton').addEventListener('click',()=>runBenchmark('rules'));
   $('benchAiButton').addEventListener('click',()=>runBenchmark('ai'));
+  $('apiConnectTestButton').addEventListener('click',testApiConnection);
   $('aiApplyButton').addEventListener('click',applyAiReview);
   $('uploadButton').addEventListener('click',()=>$('applicationInput').click());
   $('applicationInput').addEventListener('change',e=>{uploadFile(e.target.files?.[0]);e.target.value='';});
@@ -425,6 +438,8 @@ async function init(){
     const data=await api('/api/state');current=data.case;definitions=data.fields;
     aiEnabled=Boolean(data.ai_available);demoSha256=data.demo_sha256||'';
     $('benchAiButton').disabled=!aiEnabled;
+    $('apiConnectTestButton').disabled=!aiEnabled;
+    $('aiConnectionModel').textContent=aiEnabled?'연결 설정 완료 · '+(data.ai_model||'모델 미지정'):'AI 서버 미연결 · 기존 로컬 분석 이용 가능';
     $('aiMode').textContent=aiEnabled?`${data.ai_mode==='local'?'로컬':'외부'} AI 연결 가능 · 별도 실행`:'AI 미연결 · 규칙 분석 가능';
     $('externalAiConsent').disabled=!aiEnabled;
     render();
