@@ -18,6 +18,14 @@
 
 **주의:** 지금 구현한 것은 신청정보 **추출 초안**입니다. 법령 판단, 협의대상 추천, 허가/신고 처리 판단은 하지 않습니다.
 
+## v0.1.9 — Gemini 무료 API 기본 연결 (2026-10-17)
+
+- **Google Gemini가 기본**입니다: `start_ai_windows.bat` 실행 → 제공자 Enter(기본 1) → 모델 Enter(`gemini-3.1-flash-lite`) → Google AI Studio API 키 숨김 입력.
+- 엔드포인트: `https://generativelanguage.googleapis.com/v1beta/openai/` (Google 공식 OpenAI 호환 API). 기존 OpenAI는 제공자 2 선택 시 계속 이용 가능합니다.
+- 별도 API 키가 없으면 기존 `start_windows.bat`으로 로컬 규칙 분석·사건 관리 이용 가능.
+- **Gemini 무료 티어는 계정/지역/사용량 제한이 있고, 무료 티어 입력이 제품 개선에 사용될 수 있습니다.** 실제 민원자료는 외부 전송 금지. 고정 해시와 일치하는 합성 TXT만 전송.
+- AI 연결시험과 최대 4건 합성 정확도 평가를 실제 사용자 PC에서 시험해야 합니다. 자세한 내용은 `AI_API_연결_가이드.md` 참조.
+
 ## Windows 실행 (Python 3.10 이상)
 
 1. Python을 설치하고 `Add Python to PATH`를 켭니다.
