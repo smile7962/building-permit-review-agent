@@ -21,6 +21,7 @@ from parser import ai_available, parse_application
 from seumteo_details import extract_details
 from ai_review import ai_config, compare_ai
 from demo_review import compare_synthetic_demo, DEMO_FILE
+from benchmark import run_benchmark
 
 ROOT = Path(__file__).resolve().parent
 PORT = int(os.environ.get('APP_PORT', '8765'))
@@ -44,7 +45,7 @@ def store():
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'BuildingPermitReview/0.1.6'
+    server_version = 'BuildingPermitReview/0.1.7'
 
     def _headers(self, status, mime='application/json; charset=utf-8', size=None, more=None):
         self.send_response(status)
@@ -178,6 +179,15 @@ class Handler(BaseHTTPRequestHandler):
             draft = compare_synthetic_demo(doc['content'], lines, state['values'], FIELD_KEYS)
             case = store().record_ai_review(draft, doc_id)
             self._json(200, {'case': case})
+        elif parsed.path == '/api/benchmark':
+            obj = json.loads(self._read(4 * 1024))
+            mode = obj.get('mode')
+            if mode not in ('rules', 'ai'):
+                raise ValueError('rules 또는 ai 평가 모드를 선택하세요.')
+            # Only bundled fixtures; never reads the active case or its documents.
+            report = run_benchmark(mode, consent=obj.get('consent') is True,
+                                   allowed_keys=FIELD_KEYS)
+            self._json(200, report)
         elif parsed.path == '/api/ai-apply':
             obj = json.loads(self._read(4 * 1024))
             self._json(200, {'case': store().apply_ai_review(obj.get('run_id'),obj.get('keys'))})
@@ -216,7 +226,7 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     store()
     httpd = ThreadingHTTPServer(('127.0.0.1', PORT), Handler)
-    print(f'건축인허가 AI 지원 v0.1.6 실행: http://127.0.0.1:{PORT}', flush=True)
+    print(f'건축인허가 AI 지원 v0.1.7 실행: http://127.0.0.1:{PORT}', flush=True)
     print('로컬 PC에서만 접근 가능합니다. 종료: Ctrl+C', flush=True)
     if os.environ.get('APP_NO_BROWSER') != '1':
         threading.Timer(0.8, lambda: webbrowser.open(f'http://127.0.0.1:{PORT}')).start()

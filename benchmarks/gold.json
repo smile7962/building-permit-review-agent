@@ -1,0 +1,96 @@
+{
+  "version": "2026-10-17-v1",
+  "notice": "전부 합성자료. 실제 건축인허가 신청서에서 가져온 개인 식별값 없음.",
+  "cases": [
+    {
+      "id": "permit_house",
+      "file": "permit_house.txt",
+      "description": "permit_house",
+      "expected": {
+        "permit_type": "건축허가",
+        "work_type": "신축",
+        "site_address": "경기도 파주시 가상동 101-7 (가상주소)",
+        "site_area_m2": "420",
+        "building_area_m2": "120",
+        "total_floor_area_m2": "235.5",
+        "building_coverage_percent": "28.57",
+        "floor_area_ratio_percent": "56.07",
+        "primary_use": "단독주택",
+        "structure": "철근콘크리트구조",
+        "above_ground_floors": "2",
+        "underground_floors": "0",
+        "building_count": "1",
+        "parking_spaces": "2",
+        "zoning": "계획관리지역",
+        "notes": "모의 주택 신축 신청 건으로 법적 판단은 별도"
+      }
+    },
+    {
+      "id": "notice_shop",
+      "file": "notice_shop.txt",
+      "description": "notice_shop",
+      "expected": {
+        "permit_type": "건축신고",
+        "work_type": "신축",
+        "site_address": "경기도 파주시 시험리 55-3 (가상주소)",
+        "site_area_m2": "800",
+        "building_area_m2": "190",
+        "total_floor_area_m2": "380",
+        "building_coverage_percent": "23.75",
+        "floor_area_ratio_percent": "47.50",
+        "primary_use": "제2종 근린생활시설",
+        "structure": "일반철골구조",
+        "above_ground_floors": "2",
+        "underground_floors": "0",
+        "building_count": "1",
+        "parking_spaces": "4",
+        "notes": "가상 상가 신축 사례, 용도지역 항목은 원본 공란"
+      }
+    },
+    {
+      "id": "permit_parking",
+      "file": "permit_parking.txt",
+      "description": "permit_parking",
+      "expected": {
+        "permit_type": "건축허가",
+        "work_type": "신축",
+        "site_address": "경기도 파주시 테스트동 88-12 (가상주소)",
+        "site_area_m2": "1230",
+        "building_area_m2": "790",
+        "total_floor_area_m2": "5410",
+        "building_coverage_percent": "64.23",
+        "floor_area_ratio_percent": "282.93",
+        "primary_use": "자동차관련시설(주차장)",
+        "structure": "철골철근콘크리트구조",
+        "above_ground_floors": "5",
+        "underground_floors": "2",
+        "building_count": "1",
+        "parking_spaces": "110",
+        "zoning": "일반상업지역",
+        "notes": "전체 연면적과 층별 연면적을 구분하는 합성 검증"
+      }
+    },
+    {
+      "id": "notice_extension",
+      "file": "notice_extension.txt",
+      "description": "notice_extension",
+      "expected": {
+        "permit_type": "건축신고",
+        "work_type": "증축",
+        "site_address": "경기도 파주시 임시리 23-8 (가상주소)",
+        "site_area_m2": "560",
+        "building_area_m2": "132",
+        "total_floor_area_m2": "254.30",
+        "building_coverage_percent": "23.57",
+        "floor_area_ratio_percent": "45.41",
+        "primary_use": "단독주택",
+        "structure": "경량철골구조",
+        "above_ground_floors": "2",
+        "underground_floors": "0",
+        "parking_spaces": "2",
+        "zoning": "보전관리지역",
+        "notes": "주건축물수 미기재, 현장 확인 필요"
+      }
+    }
+  ]
+}

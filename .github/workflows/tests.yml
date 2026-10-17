@@ -16,7 +16,9 @@ jobs:
       - name: Install PDF parser test dependency
         run: python -m pip install "pypdf>=5,<8"
       - name: Python syntax check
-        run: python -m compileall -q server.py case_store.py parser.py tests
+        run: python -m compileall -q server.py case_store.py parser.py benchmark.py demo_review.py tests
+      - name: JavaScript syntax check
+        run: node --check static/app.js
       - name: Run unit and HTTP tests
         env:
           APP_NO_BROWSER: '1'

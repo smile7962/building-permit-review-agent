@@ -15,3 +15,19 @@
 /* Phase 1.6: distinguish offline fixture simulation from actual LLM calls. */
 .ai-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
 .ai-actions button{white-space:normal}
+
+/* Phase 1.7: synthetic benchmark metrics */
+.benchmark-body{padding:16px 20px 20px}
+.benchmark-note,.benchmark-disclaimer{font-size:11px;line-height:1.7;color:#60718b}
+.benchmark-note{margin:0 0 13px}
+.benchmark-output{min-height:35px;font-size:12px;color:#53647b}
+.benchmark-header{font-weight:700;color:#203858;margin:7px 0 12px}
+.benchmark-summary{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:12px 13px;margin:7px 0;border-radius:7px;background:#f5f7fb}
+.benchmark-summary strong{color:#294261}
+.benchmark-accuracy{color:#1b617f;font-size:21px;font-weight:900}
+.benchmark-details{padding:10px 2px}
+.benchmark-details summary{cursor:pointer;color:#4265ad;font-weight:700}
+.benchmark-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:9px}
+.benchmark-table th,.benchmark-table td{text-align:left;padding:9px 6px;border-bottom:1px solid #e9edf3}
+.benchmark-table th{color:#576984;background:#f6f8fc}
+.benchmark-issues{color:#9a5e2b;overflow-wrap:anywhere}
