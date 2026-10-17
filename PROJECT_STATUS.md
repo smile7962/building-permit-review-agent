@@ -126,3 +126,8 @@
 - Google 무료 티어의 제한과 제품개선 사용 고지를 사용자 가이드에 추가.
 - 일반 로컬 모드, 외부 합성자료 전송 차단, human-in-loop .bcase 관리 유지.
 - 실제 API 키로 Gemini 서버 호출은 사용자 PC 검증 단계로 남음.
+
+## v0.1.9.1 Windows BAT 줄바꿈 수정
+- v0.1.9 배포본의 BAT 파일이 LF 줄바꿈으로 배포된 사실을 확인. Windows CMD 호환을 위해 CRLF로 수정.
+- AI 실행파일은 Windows PowerShell 시스템 경로 사용, 실패 메시지와 종료코드 표시.
+- API 키 사용 실환경의 Windows 실행 확인은 사용자 PC에서 필요.
