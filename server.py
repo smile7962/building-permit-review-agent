@@ -19,9 +19,10 @@ from urllib.parse import parse_qs, urlparse, quote
 from case_store import CaseStore
 from parser import ai_available, parse_application
 from seumteo_details import extract_details
-from ai_review import ai_config, compare_ai
+from ai_review import ai_config, compare_ai, test_ai_connection
 from demo_review import compare_synthetic_demo, DEMO_FILE
 from benchmark import run_benchmark
+from synthetic_gate import require_approved_fixture, require_bundled_fixture_integrity
 
 ROOT = Path(__file__).resolve().parent
 PORT = int(os.environ.get('APP_PORT', '8765'))
@@ -45,7 +46,7 @@ def store():
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'BuildingPermitReview/0.1.7'
+    server_version = 'BuildingPermitReview/0.1.8'
 
     def _headers(self, status, mime='application/json; charset=utf-8', size=None, more=None):
         self.send_response(status)
@@ -117,6 +118,7 @@ class Handler(BaseHTTPRequestHandler):
         if parsed.path == '/api/state':
             self._json(200, {'case': store().state(), 'fields': FIELDS,
                              'ai_available': ai_config()['available'], 'ai_mode': ai_config()['mode'],
+                             'ai_model': ai_config()['model'], 'ai_provider': 'OpenAI 호환 Chat Completions',
                              'demo_sha256': DEMO_SHA256, 'supported': ['.txt','.csv','.pdf','.docx','.xls','.xlsx']})
         elif parsed.path == '/api/export':
             state = store().state()
@@ -152,6 +154,12 @@ class Handler(BaseHTTPRequestHandler):
             obj = json.loads(self._read(16 * 1024))
             self._json(200, {'case': store().patch_detail(obj.get('section'), obj.get('index'),
                 obj.get('part'), obj.get('field'), obj.get('value'))})
+        elif parsed.path == '/api/ai-connect-test':
+            obj = json.loads(self._read(4 * 1024))
+            if obj.get('consent') is not True:
+                raise ValueError('API 연결시험(유료 1회 호출 가능)에 명시적으로 동의해야 합니다.')
+            # Sends only a hard-coded PING prompt; never touches workspace or documents.
+            self._json(200, {'result': test_ai_connection()})
         elif parsed.path == '/api/ai-review':
             obj = json.loads(self._read(4 * 1024))
             if obj.get('consent') is not True:
@@ -163,6 +171,8 @@ class Handler(BaseHTTPRequestHandler):
             if not state['documents'] or doc_id != state['documents'][0]['id']:
                 raise ValueError('가장 최근 신청서를 분석해야 합니다.')
             doc = store().document(doc_id)
+            if ai_config()['mode'] == 'external':
+                require_approved_fixture(doc['content'])
             lines = json.loads(doc['extracted_lines_json'])
             draft = compare_ai(lines, state['values'], FIELD_KEYS)
             self._json(200, {'case': store().record_ai_review(draft, doc_id)})
@@ -185,6 +195,8 @@ class Handler(BaseHTTPRequestHandler):
             if mode not in ('rules', 'ai'):
                 raise ValueError('rules 또는 ai 평가 모드를 선택하세요.')
             # Only bundled fixtures; never reads the active case or its documents.
+            if mode == 'ai':
+                require_bundled_fixture_integrity()
             report = run_benchmark(mode, consent=obj.get('consent') is True,
                                    allowed_keys=FIELD_KEYS)
             self._json(200, report)
@@ -226,7 +238,7 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     store()
     httpd = ThreadingHTTPServer(('127.0.0.1', PORT), Handler)
-    print(f'건축인허가 AI 지원 v0.1.7 실행: http://127.0.0.1:{PORT}', flush=True)
+    print(f'건축인허가 AI 지원 v0.1.8 실행: http://127.0.0.1:{PORT}', flush=True)
     print('로컬 PC에서만 접근 가능합니다. 종료: Ctrl+C', flush=True)
     if os.environ.get('APP_NO_BROWSER') != '1':
         threading.Timer(0.8, lambda: webbrowser.open(f'http://127.0.0.1:{PORT}')).start()
