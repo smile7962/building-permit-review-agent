@@ -1,0 +1,46 @@
+{
+  "version": "2026-10-19-v1",
+  "cases": [
+    {
+      "id": "permit_checkmark_pdf",
+      "file": "permit_checkmark.pdf",
+      "expected": {
+        "permit_type": "건축허가",
+        "work_type": "신축",
+        "site_address": "경기도 파주시 합성동 101-7",
+        "site_area_m2": "420",
+        "building_area_m2": "120",
+        "total_floor_area_m2": "235.5",
+        "primary_use": "단독주택",
+        "structure": "철근콘크리트구조",
+        "building_count": "1",
+        "above_ground_floors": "2",
+        "underground_floors": "0",
+        "parking_spaces": "2",
+        "zoning": "계획관리지역",
+        "building_coverage_percent": "28.57",
+        "floor_area_ratio_percent": "56.07"
+      }
+    },
+    {
+      "id": "extension_overall_pdf",
+      "file": "extension_overall.pdf",
+      "expected": {
+        "permit_type": "건축신고",
+        "work_type": "증축",
+        "site_address": "경기도 파주시 합성리 23-8",
+        "site_area_m2": "560",
+        "building_area_m2": "132",
+        "total_floor_area_m2": "254.30",
+        "primary_use": "단독주택",
+        "structure": "경량철골구조",
+        "above_ground_floors": "2",
+        "underground_floors": "0",
+        "parking_spaces": "2",
+        "zoning": "보전관리지역",
+        "building_coverage_percent": "23.57",
+        "floor_area_ratio_percent": "45.41"
+      }
+    }
+  ]
+}

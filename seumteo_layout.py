@@ -297,4 +297,27 @@ def parse_seumteo(lines, allowed_keys):
                 m = re.search(r'지하:\s*층\s*지상:\s*(\d+)층', s)
                 if m:
                     set_value('above_ground_floors', m.group(1), row)
+    # First-page cadastral lot on its own line. Require nearby label.
+    address = values.get('site_address', '')
+    if address and 'site_address' in allowed_keys:
+        for idx, row in enumerate(first_page):
+            m = re.fullmatch(r'\s*지\s*번\s*[:：]\s*(산\s*)?(\d{1,5}(?:\s*-\s*\d{1,5})?)\s*', row['text'])
+            if not m:
+                continue
+            if not any(re.search(r'대지\s*위치', candidate['text']) for candidate in first_page[max(0, idx-4):idx]):
+                continue
+            lot = ('산 ' if m.group(1) else '') + re.sub(r'\s*-\s*', '-', m.group(2))
+            if not re.search(r'(?:^|\s)' + re.escape(lot) + r'(?:$|\s)', address):
+                values['site_address'] = address.rstrip() + ' ' + lot
+                sources.setdefault('site_address', {})['lot_line'] = row['n']
+                sources['site_address']['evidence'] = (sources['site_address'].get('evidence', '') + ' / ' + row['text'])
+                sources['site_address']['method'] = '대지위치·명시 지번 결합'
+            break
+
+    if 'building_count' in allowed_keys and 'building_count' not in values:
+        for row in first_page:
+            m = re.fullmatch(r'\s*주\s*건축물\s*수\s*[:：]\s*(\d{1,3})\s*(?:동)?\s*', row['text'])
+            if m:
+                set_value('building_count', m.group(1), row, '전체 개요에 명시된 주건축물수')
+                break
     return values, sources

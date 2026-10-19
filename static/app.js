@@ -328,6 +328,28 @@ function renderBenchmark(report, outputId='benchmarkOutput'){
   box.append(create('p','benchmark-disclaimer',report.notice));
   if(report.mode==='rules')box.append(create('p','benchmark-disclaimer','실제 AI 결과는 아직 없습니다. 실제 AI 모델을 연결하면 같은 정답으로 비교할 수 있습니다.'));
 }
+async function runRealformBenchmark(){
+ const btn=$('realformBenchButton');btn.disabled=true;
+ try{
+  const r=await api('/api/realform-benchmark',{method:'POST',json:{}});
+  const box=$('realformBenchOutput');box.replaceChildren();
+  const sum=r.summary;
+  box.append(create('div','benchmark-header',`실무형 합성 PDF ${sum.cases}건 · 정확 ${sum.counts.correct}/${sum.expected_fields} · ${sum.accuracy}% · 누락 ${sum.counts.missing}`));
+  for(const item of r.cases){
+   const details=create('details','benchmark-details');
+   details.append(create('summary','',`${item.id} · 정확 ${item.score.counts.correct}/${item.score.expected_fields} · 누락 ${item.score.counts.missing}`));
+   const table=create('table','benchmark-table');const head=create('tr');
+   for(const h of ['항목','판정','정답','추출값'])head.append(create('th','',h));table.append(head);
+   for(const field of item.score.fields){const row=create('tr');
+    for(const val of [field.field,field.status,field.expected??'공란',field.observed??'공란'])row.append(create('td','',String(val)));
+    table.append(row);}
+   details.append(table);box.append(details);
+  }
+  box.append(create('p','benchmark-disclaimer',r.notice));
+  notify('실무형 합성 PDF 평가 완료');
+ }catch(e){notify('실무형 평가 실패: '+e.message,true);}
+ finally{btn.disabled=false;}
+}
 async function testApiConnection(){
   if(!aiEnabled){notify('먼저 AI 연결 실행 스크립트에서 API를 설정하세요.',true);return;}
   if(!confirm('문서를 전혀 보내지 않고 고정된 시험 문장으로 API를 1회 호출합니다. 소액 비용이 발생할 수 있습니다. 진행할까요?'))return;
@@ -441,6 +463,7 @@ function setup(){
   $('aiRunButton').addEventListener('click',runAiReview);
   $('demoRunButton').addEventListener('click',runDemoReview);
   $('benchRulesButton').addEventListener('click',()=>runBenchmark('rules'));
+  $('realformBenchButton').addEventListener('click',runRealformBenchmark);
   $('benchAiButton').addEventListener('click',()=>runBenchmark('ai'));
   $('practicalRulesButton').addEventListener('click',()=>runPracticalBenchmark('rules'));
   $('practicalAiButton').addEventListener('click',()=>runPracticalBenchmark('ai'));
