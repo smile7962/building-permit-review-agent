@@ -23,6 +23,7 @@ from ai_review import ai_config, compare_ai, test_ai_connection
 from demo_review import compare_synthetic_demo, DEMO_FILE
 from benchmark import run_benchmark
 from realform_benchmark import run_realform_benchmark
+from practical_benchmark import run_practical_benchmark
 from synthetic_gate import require_approved_fixture, require_bundled_fixture_integrity
 from legal_review import MASTER as LEGAL_MASTER
 
@@ -201,8 +202,6 @@ class Handler(BaseHTTPRequestHandler):
             case = store().record_ai_review(draft, doc_id)
             self._json(200, {'case': case})
         elif parsed.path == '/api/realform-benchmark':
-            # Read-only, fixed bundled synthetic PDF fixtures; never sends
-            # case documents or extracted text to external model servers.
             self._json(200, run_realform_benchmark(FIELD_KEYS))
         elif parsed.path == '/api/benchmark':
             obj = json.loads(self._read(4 * 1024))
@@ -215,6 +214,16 @@ class Handler(BaseHTTPRequestHandler):
                 require_bundled_fixture_integrity()
             report = run_benchmark(mode, consent=obj.get('consent') is True,
                                    allowed_keys=FIELD_KEYS)
+            self._json(200, report)
+        elif parsed.path == '/api/practical-benchmark':
+            obj = json.loads(self._read(4 * 1024))
+            mode = obj.get('mode')
+            if mode not in ('rules', 'ai'):
+                raise ValueError('rules 또는 ai 평가 모드를 선택하세요.')
+            # Read-only: only built-in hashed, synthetic PDF/XLSX cases.
+            # Neither active case nor its uploaded documents are read.
+            report = run_practical_benchmark(mode, consent=obj.get('consent') is True,
+                                             allowed_keys=FIELD_KEYS)
             self._json(200, report)
         elif parsed.path == '/api/ai-apply':
             obj = json.loads(self._read(4 * 1024))

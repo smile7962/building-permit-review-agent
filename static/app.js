@@ -283,11 +283,11 @@ async function runAiReview(){
   }catch(e){indicator('AI 분석 실패','error');notify(e.message,true);}
   finally{renderAiReview();}
 }
-function renderBenchmark(report){
+function renderBenchmark(report, outputId='benchmarkOutput'){
   currentBenchmark=report;
-  const box=$('benchmarkOutput');box.replaceChildren();
+  const box=$(outputId);box.replaceChildren();
   const heading=create('div','benchmark-header',
-    `${report.rules.summary.cases}건 / 정답 ${report.rules.summary.expected_fields}항목 · 합성자료 전용`);
+    `${report.rules.summary.cases}건 / 정답 ${report.rules.summary.expected_fields}항목 · ${report.practical?'실무형 PDF·XLSX 합성 검증':'합성 TXT 검증'}`);
   box.append(heading);
   for(const [mode,label] of [['rules','규칙 기반 분석'],['ai','실제 LLM 분석']]){
     if(!report[mode])continue;
@@ -314,30 +314,45 @@ function renderBenchmark(report){
     }
     table.append(body);details.append(table);box.append(details);
   }
+  if(report.practical){
+    const detail=report.details_summary;
+    box.append(create('p','benchmark-disclaimer',`동별·층별·면적 구분 검증: ${detail.correct}/${detail.total}항목 일치. 실패한 항목은 아래에서 확인하세요.`));
+    const exp=create('details','benchmark-details');
+    exp.append(create('summary','','PDF·엑셀 상세정보 검증 펼치기'));
+    const list=create('div','benchmark-practical-checks');
+    for(const item of report.rules.cases){
+      const heading=create('strong','',item.description);list.append(heading);
+      for(const check of item.detail_score.checks){
+        const label=create('p','',`${check.ok?'✓':'⚠'} ${check.item}: ${check.ok?'일치':'불일치'} (기대: ${JSON.stringify(check.expected)} / 분석: ${JSON.stringify(check.actual)})`);
+        list.append(label);
+      }
+    }
+    exp.append(list);box.append(exp);
+  }
   box.append(create('p','benchmark-disclaimer',report.notice));
   if(report.mode==='rules')box.append(create('p','benchmark-disclaimer','실제 AI 결과는 아직 없습니다. 실제 AI 모델을 연결하면 같은 정답으로 비교할 수 있습니다.'));
 }
 async function runRealformBenchmark(){
-  const btn=$('realformBenchButton');btn.disabled=true;
-  try{
-    const r=await api('/api/realform-benchmark',{method:'POST',json:{}});
-    const box=$('realformBenchOutput');box.replaceChildren();
-    const total=r.summary;
-    box.append(create('div','benchmark-header',`실무형 합성 PDF ${total.cases}건 · 정확 ${total.counts.correct}/${total.expected_fields} · ${total.accuracy}% · 누락 ${total.counts.missing}`));
-    for(const item of r.cases){
-      const details=create('details','benchmark-details');
-      details.append(create('summary','',`${item.id} · 정확 ${item.score.counts.correct}/${item.score.expected_fields} · 누락 ${item.score.counts.missing}`));
-      const table=create('table','benchmark-table');const head=create('tr');
-      for(const label of ['항목','판정','정답','추출값'])head.append(create('th','',label));table.append(head);
-      for(const f of item.score.fields){const tr=create('tr');
-        for(const value of [f.field,f.status,f.expected??'공란',f.observed??'공란'])tr.append(create('td','',String(value)));
-        table.append(tr);
-      }
-      details.append(table);box.append(details);
-    }
-    box.append(create('p','benchmark-disclaimer',r.notice));notify('실무형 합성 PDF 평가 완료');
-  }catch(e){notify('실무형 평가 실패: '+e.message,true);}
-  finally{btn.disabled=false;}
+ const btn=$('realformBenchButton');btn.disabled=true;
+ try{
+  const r=await api('/api/realform-benchmark',{method:'POST',json:{}});
+  const box=$('realformBenchOutput');box.replaceChildren();
+  const sum=r.summary;
+  box.append(create('div','benchmark-header',`실무형 합성 PDF ${sum.cases}건 · 정확 ${sum.counts.correct}/${sum.expected_fields} · ${sum.accuracy}% · 누락 ${sum.counts.missing}`));
+  for(const item of r.cases){
+   const details=create('details','benchmark-details');
+   details.append(create('summary','',`${item.id} · 정확 ${item.score.counts.correct}/${item.score.expected_fields} · 누락 ${item.score.counts.missing}`));
+   const table=create('table','benchmark-table');const head=create('tr');
+   for(const h of ['항목','판정','정답','추출값'])head.append(create('th','',h));table.append(head);
+   for(const field of item.score.fields){const row=create('tr');
+    for(const val of [field.field,field.status,field.expected??'공란',field.observed??'공란'])row.append(create('td','',String(val)));
+    table.append(row);}
+   details.append(table);box.append(details);
+  }
+  box.append(create('p','benchmark-disclaimer',r.notice));
+  notify('실무형 합성 PDF 평가 완료');
+ }catch(e){notify('실무형 평가 실패: '+e.message,true);}
+ finally{btn.disabled=false;}
 }
 async function testApiConnection(){
   if(!aiEnabled){notify('먼저 AI 연결 실행 스크립트에서 API를 설정하세요.',true);return;}
@@ -367,11 +382,26 @@ async function runBenchmark(mode){
   }catch(e){notify('평가 실패: '+e.message,true);}
   finally{button.disabled=(mode==='ai'&&!aiEnabled);button.textContent=oldText;}
 }
+async function runPracticalBenchmark(mode){
+  if(mode==='ai'){
+    if(!aiEnabled){notify('Gemini 연결 설정이 필요합니다.',true);return;}
+    if(!$('externalAiConsent').checked){notify('상단의 합성 시험자료 전송 동의를 선택하세요.',true);return;}
+    if(!confirm('고정 합성 PDF·XLSX 4건의 추출 텍스트·표 셀 정보를 AI에 보냅니다. 원본 이미지는 보내지 않습니다. 최대 4회 호출을 진행할까요?'))return;
+  }
+  const button=$(mode==='ai'?'practicalAiButton':'practicalRulesButton');
+  const oldText=button.textContent;button.disabled=true;button.textContent='실무형 서식 평가 중...';
+  try{
+    const report=await api('/api/practical-benchmark',{method:'POST',json:{mode,consent:mode==='ai'}});
+    renderBenchmark(report,'practicalBenchmarkOutput');
+    notify(mode==='ai'?'합성 PDF·엑셀 Gemini 평가 완료':'실무형 PDF·엑셀 규칙 평가 완료');
+  }catch(e){notify('실무형 평가 실패: '+e.message,true);}
+  finally{button.disabled=(mode==='ai'&&!aiEnabled);button.textContent=oldText;}
+}
 
-function chooseBox(values,currentValue,klass){
-  const select=create('select',klass);
-  for(const val of values){const option=create('option','',val);option.value=val;select.append(option);}
-  select.value=currentValue||values[0];return select;
+function chooseBox(options,value){
+  const sel=create('select','legal-input');
+  for(const name of options){const option=create('option','',name);option.value=name;sel.append(option);}
+  sel.value=value||options[0];return sel;
 }
 function legalGroup(item){ return item.level==='대표항목'?'대표 검토':item.group; }
 function refreshLegalGroups(){
@@ -461,28 +491,30 @@ function renderLegal(){
   }
 }
 async function buildLegal(){
-  if(!current?.confirmed_at){notify('STEP 01 건축개요를 먼저 검토 확정하세요.',true);return;}
-  if(current?.legal_review&&!confirm('이전 검토의견·적용 여부가 초기화됩니다. 체크리스트를 다시 생성할까요?'))return;
-  try{await persist();const res=await api('/api/legal-build',{method:'POST',json:{init:true}});
-    current=res.case;renderLegal();updateSummary();notify(`법령 검토 후보 ${current.legal_review.items.length}개 생성 완료. 담당자가 적용 여부를 확인하세요.`);}
-  catch(e){notify(e.message,true);}
+  if(!current?.confirmed_at){notify('STEP 01 건축개요 검토확정 후 사용하세요.',true);return;}
+  if(current.legal_review&&!confirm('기존 항목별 검토의견이 초기화됩니다. 계속할까요?'))return;
+  try{
+    await persist();
+    const d=await api('/api/legal-build',{method:'POST',json:{init:true}});
+    current=d.case;renderLegal();updateSummary();notify('검토항목 후보 14개 생성');
+  }catch(e){notify(e.message,true);}
 }
 async function confirmLegal(){
-  try{const res=await api('/api/legal-confirm',{method:'POST',json:{confirm:true}});
-    current=res.case;renderLegal();updateSummary();notify('건축법 검토기록이 확정됐습니다. 법적 적합성 판정은 아닙니다.');}
-  catch(e){notify(e.message,true);}
+  try{
+    const d=await api('/api/legal-confirm',{method:'POST',json:{confirm:true}});
+    current=d.case;renderLegal();updateSummary();notify('담당자 검토기록 확정 · 적법성 자동판정 아님');
+  }catch(e){notify(e.message,true);}
 }
-async function switchStep(step){
-  if(step!==1&&step!==2)return;
-  if(step===2){try{await persist();}catch(e){notify(e.message,true);return;}}
-  activeStep=step;
-  $('phase1Screen').hidden=step!==1;
-  $('phase2Screen').hidden=step!==2;
-  document.querySelectorAll('.step').forEach(b=>b.classList.toggle('current',Number(b.dataset.step)===step));
-  document.querySelector('.sidebar-caption span').textContent=String(step).padStart(2,'0')+' / 09';
-  document.querySelector('.assistant-heading small').textContent=step===1?'현재 단계 · 신청서 분석':'현재 단계 · 건축법 검토';
-  $('legalBuildButton').disabled=step!==2;
-  if(step===2)renderLegal();
+async function switchStep(n){
+  if(n!==1&&n!==2)return;
+  if(n===2){try{await persist();}catch(e){notify(e.message,true);return;}}
+  activeStep=n;
+  $('phase1Screen').hidden=n!==1;
+  $('phase2Screen').hidden=n!==2;
+  document.querySelectorAll('.step').forEach(b=>b.classList.toggle('current',Number(b.dataset.step)===n));
+  document.querySelector('.sidebar-caption span').textContent=String(n).padStart(2,'0')+' / 09';
+  document.querySelector('.assistant-heading small').textContent=n===1?'현재 단계 · 신청서 분석':'현재 단계 · 건축법 검토';
+  if(n===2)renderLegal();
   document.querySelector('main.main').scrollTop=0;
 }
 
@@ -563,6 +595,8 @@ function setup(){
   $('benchRulesButton').addEventListener('click',()=>runBenchmark('rules'));
   $('realformBenchButton').addEventListener('click',runRealformBenchmark);
   $('benchAiButton').addEventListener('click',()=>runBenchmark('ai'));
+  $('practicalRulesButton').addEventListener('click',()=>runPracticalBenchmark('rules'));
+  $('practicalAiButton').addEventListener('click',()=>runPracticalBenchmark('ai'));
   $('apiConnectTestButton').addEventListener('click',testApiConnection);
   $('aiApplyButton').addEventListener('click',applyAiReview);
   $('uploadButton').addEventListener('click',()=>$('applicationInput').click());
@@ -574,7 +608,7 @@ function setup(){
   dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dragover');uploadFile(e.dataTransfer.files[0]);});
   document.querySelectorAll('.step').forEach(s=>s.addEventListener('click',()=>{
     if(s.dataset.step==='1'||s.dataset.step==='2')switchStep(Number(s.dataset.step));
-    else notify('STEP 03~09는 이후 개발 단계입니다.');
+    else notify('STEP 03~09는 다음 개발 대상입니다.');
   }));
   // Closing the tab does not destroy the local working copy, but export is needed for portability.
   window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
@@ -585,6 +619,7 @@ async function init(){
     const data=await api('/api/state');current=data.case;definitions=data.fields;legalMaster=data.legal_master;refreshLegalGroups();
     aiEnabled=Boolean(data.ai_available);demoSha256=data.demo_sha256||'';
     $('benchAiButton').disabled=!aiEnabled;
+    $('practicalAiButton').disabled=!aiEnabled;
     $('apiConnectTestButton').disabled=!aiEnabled;
     $('aiConnectionModel').textContent=aiEnabled?'연결 설정 완료 · '+(data.ai_provider==='gemini'?'Google Gemini':data.ai_provider==='openai'?'OpenAI':'호환 API')+' · '+(data.ai_model||'모델 미지정'):'AI 서버 미연결 · 기본 서비스 Gemini · 로컬 규칙 분석 가능';
     $('aiMode').textContent=aiEnabled?`${data.ai_mode==='local'?'로컬':'외부'} AI 연결 가능 · 별도 실행`:'AI 미연결 · 규칙 분석 가능';
