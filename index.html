@@ -33,7 +33,7 @@
         <button class="step" data-step="8"><span class="step-num">08</span><span><strong>검토조서</strong><small>최종 검토초안</small></span><span class="lock">준비중</span></button>
         <button class="step" data-step="9"><span class="step-num">09</span><span><strong>처리공문</strong><small>처리결과 문서</small></span><span class="lock">준비중</span></button>
       </nav>
-      <div class="sidebar-footer"><span>Phase 2 / v0.2.0</span><small>현재: 신청정보 구조화 기능</small></div>
+      <div class="sidebar-footer"><span>Phase 2 / v0.2.1</span><small>현재: 신청정보 구조화 기능</small></div>
     </aside>
     <main class="main">
       <div id="phase1Screen">
@@ -105,10 +105,15 @@
       </div>
       <div id="phase2Screen" hidden>
         <div class="page-heading"><div><div class="eyebrow">STEP 02 · 건축법 검토</div><h1>건축법 검토 체크리스트</h1><p>검토항목은 참고 후보입니다. 관련 법령의 적용 여부와 검토결과는 담당자가 결정합니다.</p></div><span class="status" id="legalStatus">검토 전</span></div>
-        <section class="panel legal-panel"><div class="panel-heading"><div><h2>담당자 확인 기반 검토</h2><span id="legalVersion">검토 기준 마스터</span></div><button class="btn outline" id="legalBuildButton" type="button">체크리스트 생성·재생성</button></div>
-          <div class="legal-intro"><p>건축개요를 먼저 확정해야 체크리스트를 생성할 수 있습니다. 각 항목의 적용 여부·진행 상태·검토의견을 직접 입력합니다. 이 화면은 법적 적합성을 판단하지 않습니다.</p><p class="legal-alert" id="legalWarning"></p><div id="legalProgress"></div></div>
+        <section class="panel legal-panel"><div class="panel-heading"><div><h2>분야별 세부 법령 검토</h2><span id="legalVersion">검토 기준 마스터</span></div><button class="btn outline" id="legalBuildButton" type="button">체크리스트 생성·재생성</button></div>
+          <div class="legal-intro"><p>건축개요를 먼저 확정해야 체크리스트를 생성할 수 있습니다. 각 항목의 적용 여부·진행 상태·검토의견을 직접 입력합니다. 이 화면은 법적 적합성을 판단하지 않습니다.</p><p class="legal-alert" id="legalWarning"></p><div id="legalProgress"></div>
+            <div class="legal-filters">
+              <label>분야 <select id="legalGroupFilter" aria-label="법령 분야 선택"><option value="전체">전체 분야</option></select></label>
+              <label>검토 단계 <select id="legalReviewFilter" aria-label="검토 상태 선택"><option value="전체">모든 검토항목</option><option value="우선">우선 확인</option><option value="미검토">미검토</option><option value="완료">기록 완료</option><option value="대표항목">대표항목</option><option value="세부항목">세부항목</option></select></label>
+              <label>검색 <input id="legalSearch" type="search" placeholder="항목·법령·검토 질문 검색" autocomplete="off"></label>
+            </div><div class="legal-filter-info" id="legalFilterInfo"></div></div>
           <div id="legalItems" class="legal-items"></div>
-          <div class="legal-footer"><span>모든 항목의 적용 여부와 근거 의견을 확인한 후 기록을 확정하세요.</span><button type="button" class="btn success" id="legalConfirmButton">검토기록 확정</button></div>
+          <div class="legal-footer"><span>대표·세부항목의 적용 여부와 근거를 담당자가 직접 확인한 후 기록을 확정하세요. (자동 적법 판정 없음)</span><button type="button" class="btn success" id="legalConfirmButton">검토기록 확정</button></div>
         </section>
       </div>
     </main>

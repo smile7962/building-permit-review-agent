@@ -28,3 +28,15 @@ jobs:
           APP_NO_BROWSER: '1'
           AI_MODE: 'off'
         run: python -m unittest discover -s tests -v
+
+      - name: Package Windows source bundle
+        if: success()
+        run: |
+          zip -q -r building-permit-review-agent-v0.2.1.zip . -x '.git/*' 'workspace/*' '__pycache__/*' 'tests/__pycache__/*' '*.pyc'
+      - name: Upload release bundle
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: building-on-v021-windows
+          path: building-permit-review-agent-v0.2.1.zip
+          retention-days: 14

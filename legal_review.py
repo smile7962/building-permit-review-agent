@@ -1,4 +1,4 @@
-"""Human-in-the-loop legal review candidates. No compliance or applicability verdicts."""
+"""Human-in-the-loop legal review candidates. No compliance or non-applicability verdicts."""
 import hashlib
 import json
 from pathlib import Path
@@ -12,20 +12,38 @@ PROGRESS=frozenset(('미착수','검토중','검토기록완료'))
 
 def snapshot(values):
     return hashlib.sha256(json.dumps(values,sort_keys=True,ensure_ascii=False,
-                    separators=(',',':')).encode('utf-8')).hexdigest()
+                      separators=(',',':')).encode('utf-8')).hexdigest()
 
 
 def priority(item, values):
-    """Only review hints. Never mark compliance or legal exemption."""
+    """Only review hints. Never says non-applicable or legally compliant."""
     kind=item.get('condition')
     if kind=='alteration':
-        return '우선 확인' if values.get('work_type') in (
-            '증축','개축','재축','대수선','이전','허가사항 변경',
-            '신고사항 변경','용도변경') else '적용 여부 확인'
+        return '우선 확인' if values.get('work_type') in ('증축','개축','재축','대수선','이전','허가사항 변경','신고사항 변경','용도변경') else '적용 여부 확인'
     if kind=='residential_zoning':
         zoning=values.get('zoning','')
-        return '우선 확인' if ('일반주거' in zoning or '전용주거' in zoning) else '적용 여부 확인'
-    return '확인 자료 부족' if any(not values.get(f) for f in item['fields']) else '일반 검토 후보'
+        if '일반주거' in zoning or '전용주거' in zoning:
+            return '우선 확인'
+        # Other zones may have separate provisions; do NOT mark exemption.
+        return '적용 여부 확인'
+    title=item['title']
+    use=values.get('primary_use','')
+    work=values.get('work_type','')
+    zoning=values.get('zoning','')
+    special={
+      '공동주택 채광·인동간격': ('공동주택','다세대','연립','아파트'),
+      '피난안전구역·대피공간': ('공동주택','아파트','오피스텔'),
+      '장애인 전용주차장': ('근린생활','판매시설','업무시설','의료시설','집회시설'),
+      '교통약자 편의시설': ('근린생활','판매시설','업무시설','의료시설','집회시설'),
+    }
+    if title in special:
+        return '우선 확인' if any(t in use for t in special[title]) else '적용 여부 확인'
+    if title in ('증축 시 추가 주차대수','증축 전·후 면적 구분','기존·신규 주차대수 구분',
+                 '기존 건축물 대장·허가이력','종전 건축법·조례 부칙 및 특례'):
+        return '우선 확인' if work in ('증축','개축','재축','대수선','용도변경') else '적용 여부 확인'
+    if title in ('정북방향 일조 이격',):
+        return '우선 확인' if ('주거지역' in zoning) else '적용 여부 확인'
+    return '확인 자료 부족' if any(not values.get(f) for f in item['fields']) else '일반 검토 후보' 
 
 
 def build(values):
@@ -39,7 +57,7 @@ def build(values):
             'disclaimer':MASTER['disclaimer']}
 
 
-def validate_edit(item_id,applicability,progress,note):
+def validate_edit(item_id, applicability, progress, note):
     if item_id not in IDS:raise ValueError('유효하지 않은 검토항목입니다.')
     if applicability not in APPLICABILITY:raise ValueError('적용 여부를 다시 선택하세요.')
     if progress not in PROGRESS:raise ValueError('검토 진행 상태를 다시 선택하세요.')

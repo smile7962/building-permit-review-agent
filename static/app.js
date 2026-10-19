@@ -9,6 +9,7 @@ let selectedDoc = null;
 let lastRequest = 0;
 let activeStep = 1;
 let legalMaster = null;
+const legalOpenGroups = new Set(["대표 검토", "신청절차"]);
 
 async function api(path, {method='GET', json, raw}={}) {
   const options = {method, headers:{}};
@@ -402,59 +403,91 @@ function chooseBox(options,value){
   for(const name of options){const option=create('option','',name);option.value=name;sel.append(option);}
   sel.value=value||options[0];return sel;
 }
+function legalGroup(item){ return item.level==='대표항목'?'대표 검토':item.group; }
+function refreshLegalGroups(){
+  const select=$('legalGroupFilter');
+  const prev=select.value;
+  select.replaceChildren();
+  for(const group of ['전체', '대표 검토',...new Set((legalMaster?.items||[]).filter(x=>x.level==='세부항목').map(x=>x.group))]){
+    const option=create('option','',group==='전체'?'전체 분야':group);option.value=group;select.append(option);
+  }
+  select.value=[...select.options].some(o=>o.value===prev)?prev:'전체';
+}
+function matchesLegal(item){
+  const group=$('legalGroupFilter').value,stage=$('legalReviewFilter').value;
+  const term=$('legalSearch').value.trim().toLocaleLowerCase('ko');
+  if(group!=='전체' && legalGroup(item)!==group)return false;
+  if(stage==='우선' && item.priority!=='우선 확인')return false;
+  if(stage==='미검토' && item.progress==='검토기록완료')return false;
+  if(stage==='완료' && item.progress!=='검토기록완료')return false;
+  if((stage==='대표항목'||stage==='세부항목')&&item.level!==stage)return false;
+  if(term && ![item.id,item.title,item.group,item.basis,item.question,...(item.required_docs||[])].join(' ').toLocaleLowerCase('ko').includes(term))return false;
+  return true;
+}
 function renderLegal(){
-  if(!legalMaster||!current)return;
-  const r=current.legal_review,root=$('legalItems');root.replaceChildren();
-  const stale=Boolean(r?.outdated||(r&&!current.confirmed_at));
-  $('legalVersion').textContent='검토 마스터 '+legalMaster.version+' · 기준일 '+legalMaster.as_of;
-  $('legalStatus').textContent=r?.confirmed_at&&!stale?'담당자 검토기록 확정':r?'확인·기록 필요':'검토 전';
-  $('legalStatus').classList.toggle('confirmed',Boolean(r?.confirmed_at&&!stale));
-  $('step2Mark').textContent=r?.confirmed_at&&!stale?'✓':r?'●':'○';
-  $('legalWarning').textContent=!current.confirmed_at?'STEP 01 건축개요를 먼저 검토 확정하세요.':
-    stale?'기초 건축개요·원본문서·마스터가 변경됐습니다. 이전 의견은 참고용으로만 두고 체크리스트를 다시 생성하세요.':
-    !r?'확정된 건축개요로 검토항목 후보를 생성하세요.':'법령 적용·적법 여부는 담당자가 결정합니다.';
-  if(!r){$('legalProgress').textContent='검토항목 미생성';$('legalConfirmButton').disabled=true;return;}
-  const done=r.items.filter(x=>x.progress==='검토기록완료').length;
-  $('legalProgress').textContent='검토기록 완료 '+done+'/'+r.items.length+' · 법령 기준일 및 조례 확인 필요';
-  $('legalConfirmButton').disabled=stale||!current.confirmed_at||r.items.some(x=>x.progress!=='검토기록완료'||x.applicability==='미확인'||!x.note.trim());
+  if(!legalMaster || !current)return;
+  const state=current.legal_review,container=$('legalItems');container.replaceChildren();
+  const confirmEl=$('legalConfirmButton');
+  const needsRefresh=Boolean(state?.outdated || (state && !current.confirmed_at));
+  $('legalVersion').textContent=`임시 검토 마스터: ${legalMaster.version} · 기준일 ${legalMaster.as_of} · ${legalMaster.items.length}개 후보`;
+  $('legalStatus').textContent=state?.confirmed_at&&!needsRefresh?'담당자 검토기록 확정':state?'확인·기록 필요':'검토 전';
+  $('legalStatus').classList.toggle('confirmed',Boolean(state?.confirmed_at&&!needsRefresh));
+  $('step2Mark').textContent=state?.confirmed_at&&!needsRefresh?'✓':state?'●':'○';
+  let message='';
+  if(!current.confirmed_at)message='STEP 01 건축개요를 먼저 확정하세요.';
+  else if(needsRefresh)message='건축개요·원문 또는 검토마스터가 변경됐습니다. 기존 이력은 사건파일에 보존됩니다. 재생성 전 저장한 검토의견을 확인하세요.';
+  else if(!state)message='확정된 신청정보를 바탕으로 검토 후보를 생성하세요.';
+  else message='추천 순위는 확인할 차례를 정한 것뿐입니다. 적용·비적용, 적법·위법을 자동 판정하지 않습니다.';
+  $('legalWarning').textContent=message;
+  if(!state){$('legalProgress').textContent=`대표 14개 + 세부 ${legalMaster.items.length-14}개 후보 · 사건별 검토 전`;confirmEl.disabled=true;$('legalFilterInfo').textContent='먼저 체크리스트를 생성하세요.';return;}
+  const completed=state.items.filter(i=>i.progress==='검토기록완료').length;
+  $('legalProgress').textContent=`전체 ${state.items.length}개 (대표 ${state.items.filter(i=>i.level!=='세부항목').length}개 · 세부 ${state.items.filter(i=>i.level==='세부항목').length}개) · 담당자 검토기록 완료 ${completed}개 · 우선 확인 ${state.items.filter(i=>i.priority==='우선 확인').length}개`;
+  confirmEl.disabled=needsRefresh || !current.confirmed_at || state.items.some(i=>i.progress!=='검토기록완료' || i.applicability==='미확인' || !i.note.trim());
+  const selected=state.items.filter(matchesLegal);
+  $('legalFilterInfo').textContent=`현재 필터 표시 ${selected.length}개 / 전체 ${state.items.length}개 · 표시되지 않은 항목도 기록과 확정에 포함됩니다.`;
+  const grouped=new Map();
+  for(const item of selected){const group=legalGroup(item);if(!grouped.has(group))grouped.set(group,[]);grouped.get(group).push(item);}
   const labels=Object.fromEntries(definitions.map(d=>[d.key,d.label]));
-  for(const item of r.items){
-    const card=create('article','legal-item');
-    const head=create('div','legal-item-head'),title=create('div');
-    title.append(create('strong','',item.id+' · '+item.title));
-    title.append(create('small','',item.group+' · '+item.priority));
-    const url=create('a','textlink','법령 원문 열기 ↗');
-    url.href=item.url;url.target='_blank';url.rel='noopener noreferrer';
-    head.append(title,url);card.append(head);
-    card.append(create('p','legal-basis',item.basis),create('p','legal-question',item.question));
-    const facts=create('div','legal-facts');
-    for(const [key,value] of Object.entries(item.facts||{}))
-      facts.append(create('span','',(labels[key]||key)+': '+(value||'미입력')));
-    card.append(facts);
-    const editors=create('div','legal-editors');
-    const a=chooseBox(['미확인','적용','비적용'],item.applicability);
-    const p=chooseBox(['미착수','검토중','검토기록완료'],item.progress);
-    const note=create('textarea','legal-note');note.rows=3;note.maxLength=2500;note.value=item.note||'';
-    note.placeholder='적용 사유, 도면·법령 확인사항과 검토 기준일을 기재하세요.';
-    const al=create('label','','적용 여부');al.append(a);
-    const pl=create('label','','진행 상태');pl.append(p);
-    const nl=create('label','legal-note-label','담당자 검토의견');nl.append(note);
-    editors.append(al,pl,nl);card.append(editors);
-    const actions=create('div','legal-actions'),save=create('button','btn outline','이 항목 저장');
-    save.type='button';save.disabled=stale||!current.confirmed_at;
-    save.addEventListener('click',async()=>{
-      save.disabled=true;
-      try{
-        await persist();
-        const response=await api('/api/legal-update',{method:'POST',json:{
-          id:item.id,applicability:a.value,progress:p.value,note:note.value}});
-        current=response.case;renderLegal();updateSummary();
-        notify(item.id+' 검토 기록 저장 완료');
-      }catch(error){notify(error.message,true);save.disabled=false;}
-    });
-    actions.append(save);
-    if(item.reviewed_at)actions.append(create('span','',item.reviewed_at.replace('T',' ').slice(0,16)));
-    card.append(actions);root.append(card);
+  const autoOpen=!!$('legalSearch').value.trim() || $('legalGroupFilter').value!=='전체' || $('legalReviewFilter').value!=='전체';
+  for(const [group,items] of grouped){
+    const section=create('details','legal-group');section.open=autoOpen||legalOpenGroups.has(group);
+    const title=create('summary','legal-group-title',`${group} · ${items.length}개 표시 · 검토기록 완료 ${items.filter(x=>x.progress==='검토기록완료').length}`);
+    section.append(title);section.addEventListener('toggle',()=>{if(section.open)legalOpenGroups.add(group);else legalOpenGroups.delete(group);});
+    const stack=create('div','legal-group-items');
+    for(const item of items){
+      const block=create('article','legal-item');
+      const title=create('div','legal-item-head');
+      const h=create('div');h.append(create('strong','',`${item.id} · ${item.title}`));
+      h.append(create('small','',`${item.level||'대표항목'} · ${item.priority}`));title.append(h);
+      const link=create('a','textlink','근거법령 원문 ↗');link.href=item.url;link.target='_blank';link.rel='noopener noreferrer';title.append(link);block.append(title);
+      block.append(create('p','legal-basis',item.basis));
+      block.append(create('p','legal-question',item.question));
+      if(item.required_docs?.length){block.append(create('p','legal-docs','확인자료: '+item.required_docs.join(' · ')));}
+      if(item.reference_status){block.append(create('p','legal-reference','법령 검증 상태: '+item.reference_status));}
+      const facts=create('div','legal-facts');
+      for(const [key,value] of Object.entries(item.facts||{}))facts.append(create('span','',`${labels[key]||key}: ${value||'미입력'}`));
+      block.append(facts);
+      const editor=create('div','legal-editors');
+      const ap=chooseBox(['미확인','적용','비적용'],item.applicability,'legal-input');
+      const pr=chooseBox(['미착수','검토중','검토기록완료'],item.progress,'legal-input');
+      const note=create('textarea','legal-note');note.rows=3;note.maxLength=2500;note.placeholder='담당자가 조례·시행일·도면 근거, 적용 또는 비적용 사유를 기록하세요.';note.value=item.note||'';
+      const aLabel=create('label','','적용 여부');aLabel.append(ap);const pLabel=create('label','','진행 상태');pLabel.append(pr);
+      const nLabel=create('label','legal-note-label','담당자 검토의견');nLabel.append(note);
+      editor.append(aLabel,pLabel,nLabel);block.append(editor);
+      const save=create('button','btn outline','이 항목 저장');save.type='button';save.disabled=needsRefresh || !current.confirmed_at;
+      save.addEventListener('click',async()=>{
+        save.disabled=true;
+        try{
+          await persist();
+          const data=await api('/api/legal-update',{method:'POST',json:{id:item.id,applicability:ap.value,progress:pr.value,note:note.value}});
+          current=data.case;renderLegal();updateSummary();notify(`${item.id} 검토의견 저장 완료`);
+        }catch(e){notify(e.message,true);save.disabled=false;}
+      });
+      const actions=create('div','legal-actions');actions.append(save);
+      if(item.reviewed_at)actions.append(create('span','',`마지막 기록: ${item.reviewed_at.slice(0,16).replace('T',' ')}`));
+      block.append(actions);stack.append(block);
+    }
+    section.append(stack);container.append(section);
   }
 }
 async function buildLegal(){
@@ -553,6 +586,9 @@ function setup(){
   $('exportButton').addEventListener('click',exportCase);
   $('confirmButton').addEventListener('click',confirmFields);
   $('legalBuildButton').addEventListener('click',buildLegal);
+  $('legalGroupFilter').addEventListener('change',renderLegal);
+  $('legalReviewFilter').addEventListener('change',renderLegal);
+  $('legalSearch').addEventListener('input',renderLegal);
   $('legalConfirmButton').addEventListener('click',confirmLegal);
   $('aiRunButton').addEventListener('click',runAiReview);
   $('demoRunButton').addEventListener('click',runDemoReview);
@@ -580,7 +616,7 @@ function setup(){
 async function init(){
   setup();
   try{
-    const data=await api('/api/state');current=data.case;definitions=data.fields;legalMaster=data.legal_master;
+    const data=await api('/api/state');current=data.case;definitions=data.fields;legalMaster=data.legal_master;refreshLegalGroups();
     aiEnabled=Boolean(data.ai_available);demoSha256=data.demo_sha256||'';
     $('benchAiButton').disabled=!aiEnabled;
     $('practicalAiButton').disabled=!aiEnabled;
