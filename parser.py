@@ -138,8 +138,9 @@ def extract_lines(filename, data):
         wb = load_workbook(io.BytesIO(data), data_only=True, read_only=True)
         for sheet in wb:
             for row_number, row in enumerate(sheet.iter_rows(values_only=True), 1):
-                # Preserve original cell columns so that left/right comparison
-                # areas and floor-level details remain distinguishable.
+                # Preserve real column indices for Seumteo-style left/right
+                # comparison tables and per-floor descriptions. Treat the
+                # visible, exact cell text as evidence, never guess a tick.
                 cells = [{'col': i, 'text': str(v).strip()}
                          for i, v in enumerate(row) if v is not None and str(v).strip()]
                 if cells:
@@ -282,12 +283,10 @@ def parse_application(filename, data, allowed_keys, consent=False):
     # The overall form summary overrides later building/floor details.
     values.update(form_values)
     sources.update(form_sources)
-    # Never interpret the list of *all* checkbox choices as one selection.
-    # Only trust exactly one explicit PDF/vector or cell checkbox evidence.
+    # For recognizable Seumteo style forms, never record a work type that
+    # merely includes all of the unselected choices as a single string.
     from seumteo_details import selected_work_type
-    if Path(filename).suffix.lower() in ('.pdf', '.xls', '.xlsx') and any(
-        '건축구분' in line['text'].replace(' ', '') for line in lines[:50]
-    ) and any(
+    if Path(filename).suffix.lower() in ('.pdf', '.xls', '.xlsx') and any('건축구분' in line['text'].replace(' ', '') for line in lines[:50]) and any(
         ('허가신청서' in line['text'].replace(' ', '') or '신고서' in line['text'].replace(' ', ''))
         for line in lines[:20]
     ):
