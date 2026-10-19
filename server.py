@@ -26,6 +26,7 @@ from realform_benchmark import run_realform_benchmark
 from practical_benchmark import run_practical_benchmark
 from synthetic_gate import require_approved_fixture, require_bundled_fixture_integrity
 from legal_review import MASTER as LEGAL_MASTER
+from screening import DESIGN_FIELDS
 
 ROOT = Path(__file__).resolve().parent
 PORT = int(os.environ.get('APP_PORT', '8765'))
@@ -49,7 +50,7 @@ def store():
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'BuildingPermitReview/0.2.1'
+    server_version = 'BuildingPermitReview/0.2.2'
 
     def _headers(self, status, mime='application/json; charset=utf-8', size=None, more=None):
         self.send_response(status)
@@ -122,7 +123,7 @@ class Handler(BaseHTTPRequestHandler):
             self._json(200, {'case': store().state(), 'fields': FIELDS,
                              'ai_available': ai_config()['available'], 'ai_mode': ai_config()['mode'],
                              'ai_model': ai_config()['model'], 'ai_provider': ai_config()['provider'],
-                             'demo_sha256': DEMO_SHA256, 'legal_master': LEGAL_MASTER, 'supported': ['.txt','.csv','.pdf','.docx','.xls','.xlsx']})
+                             'demo_sha256': DEMO_SHA256, 'legal_master': LEGAL_MASTER, 'design_fields': DESIGN_FIELDS, 'supported': ['.txt','.csv','.pdf','.docx','.xls','.xlsx']})
         elif parsed.path == '/api/export':
             state = store().state()
             filename = f"{state['case_id'][:8]}_건축인허가.bcase"
@@ -156,6 +157,9 @@ class Handler(BaseHTTPRequestHandler):
         elif parsed.path == '/api/legal-build':
             self._read(1024)
             self._json(200, {'case': store().build_legal()})
+        elif parsed.path == '/api/design-evidence':
+            obj=json.loads(self._read(16*1024))
+            self._json(200, {'case':store().update_design_evidence(obj.get('values'))})
         elif parsed.path == '/api/legal-update':
             obj=json.loads(self._read(8*1024))
             self._json(200, {'case':store().update_legal(obj.get('id'),obj.get('applicability'),obj.get('progress'),obj.get('note'))})
@@ -263,7 +267,7 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     store()
     httpd = ThreadingHTTPServer(('127.0.0.1', PORT), Handler)
-    print(f'건축인허가 AI 지원 v0.2.1 실행: http://127.0.0.1:{PORT}', flush=True)
+    print(f'건축인허가 AI 지원 v0.2.2 실행: http://127.0.0.1:{PORT}', flush=True)
     print('로컬 PC에서만 접근 가능합니다. 종료: Ctrl+C', flush=True)
     if os.environ.get('APP_NO_BROWSER') != '1':
         threading.Timer(0.8, lambda: webbrowser.open(f'http://127.0.0.1:{PORT}')).start()
