@@ -22,6 +22,7 @@ from seumteo_details import extract_details
 from ai_review import ai_config, compare_ai, test_ai_connection
 from demo_review import compare_synthetic_demo, DEMO_FILE
 from benchmark import run_benchmark
+from realform_benchmark import run_realform_benchmark
 from practical_benchmark import run_practical_benchmark
 from synthetic_gate import require_approved_fixture, require_bundled_fixture_integrity
 
@@ -190,6 +191,8 @@ class Handler(BaseHTTPRequestHandler):
             draft = compare_synthetic_demo(doc['content'], lines, state['values'], FIELD_KEYS)
             case = store().record_ai_review(draft, doc_id)
             self._json(200, {'case': case})
+        elif parsed.path == '/api/realform-benchmark':
+            self._json(200, run_realform_benchmark(FIELD_KEYS))
         elif parsed.path == '/api/benchmark':
             obj = json.loads(self._read(4 * 1024))
             mode = obj.get('mode')
