@@ -72,3 +72,14 @@
 .legal-docs{font-size:11px;margin:9px 0 4px;color:#3e6076}
 .legal-reference{font-size:11px;margin:5px 0 10px;color:#9b5729}
 @media(max-width:800px){.legal-filters{grid-template-columns:1fr}.legal-group-items{padding:6px}}
+/* Phase2.2: event-based legal screening and verified design measurements */
+.legal-evidence-panel{margin:16px 20px;border:1px solid #c8d9ec;border-radius:10px;background:#f7faff;padding:18px}
+.legal-evidence-head{display:flex;justify-content:space-between;align-items:center;gap:14px}
+.legal-evidence-head h3{font-size:15px;margin:0 0 7px}.legal-evidence-head p{font-size:12px;color:#51617b;margin:0}
+.legal-evidence-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:16px}
+.design-evidence-field{display:block;font-size:12px;font-weight:650;color:#31405b}
+.design-evidence-field small{display:block;color:#718198;font-size:10px;font-weight:400;line-height:1.4;margin-top:5px}
+.legal-screen-reason{padding:11px;border-radius:6px;background:#f0f6ff;color:#253c60;font-size:12px;line-height:1.6}
+.legal-missing{color:#a2641c;font-weight:600;font-size:11px}.legal-check{color:#116b55;font-weight:650;font-size:12px}
+.legal-disclaimer{font-size:11px;color:#62738e;line-height:1.65;margin:12px 0 0}
+@media(max-width:680px){.legal-evidence-head{flex-direction:column;align-items:stretch}}
