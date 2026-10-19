@@ -24,7 +24,7 @@
       <div class="sidebar-caption">WORKFLOW <span>01 / 09</span></div>
       <nav aria-label="업무 단계">
         <button class="step current" data-step="1"><span class="step-num">01</span><span><strong>신청서 분석</strong><small>자료 입력 · 건축개요 확정</small></span><span class="step-indicator" id="step1Mark">●</span></button>
-        <button class="step" data-step="2"><span class="step-num">02</span><span><strong>건축법 검토</strong><small>검토 체크리스트</small></span><span class="lock">준비중</span></button>
+        <button class="step" data-step="2"><span class="step-num">02</span><span><strong>건축법 검토</strong><small>검토 체크리스트</small></span><span class="step-indicator" id="step2Mark">○</span></button>
         <button class="step" data-step="3"><span class="step-num">03</span><span><strong>협의부서 선정</strong><small>규칙 기반 협의대상</small></span><span class="lock">준비중</span></button>
         <button class="step" data-step="4"><span class="step-num">04</span><span><strong>협의공문</strong><small>부서별 공문 작성</small></span><span class="lock">준비중</span></button>
         <button class="step" data-step="5"><span class="step-num">05</span><span><strong>협의회신</strong><small>회신 검토 · 정리</small></span><span class="lock">준비중</span></button>
@@ -33,9 +33,10 @@
         <button class="step" data-step="8"><span class="step-num">08</span><span><strong>검토조서</strong><small>최종 검토초안</small></span><span class="lock">준비중</span></button>
         <button class="step" data-step="9"><span class="step-num">09</span><span><strong>처리공문</strong><small>처리결과 문서</small></span><span class="lock">준비중</span></button>
       </nav>
-      <div class="sidebar-footer"><span>Phase 1 / v0.1.10</span><small>현재: 신청정보 구조화 기능</small></div>
+      <div class="sidebar-footer"><span>Phase 2 / v0.2.0</span><small>현재: 신청정보 구조화 기능</small></div>
     </aside>
     <main class="main">
+      <div id="phase1Screen">
       <div class="page-heading"><div><div class="eyebrow">STEP 01 · 신청서 분석</div><h1>신청정보 확인</h1><p>신청서를 등록하고 자동 추출된 항목을 원문과 대조하여 확정합니다.</p></div><span class="status" id="reviewStatus">검토 전</span></div>
       <section class="upload-box" id="dropzone">
         <div class="upload-icon">⇧</div><div class="upload-copy"><strong>세움터 신청서 업로드</strong><span>파일을 끌어다 놓거나, 파일을 선택하세요.</span><small>TXT · CSV · PDF(문자형) · DOCX · XLS · XLSX / 15MB 이하</small></div>
@@ -101,6 +102,15 @@
         <div id="sourceEmpty" class="empty">신청서를 업로드하면 원문 줄과 항목별 출처가 표시됩니다.</div>
         <div id="sourceContent" hidden><div class="source-toolbar"><select id="documentSelector" aria-label="원본문서 선택"></select><a id="downloadOriginal" href="#" class="textlink">원본 다운로드 ↗</a></div><div class="source-list" id="sourceLines"></div></div>
       </section>
+      </div>
+      <div id="phase2Screen" hidden>
+        <div class="page-heading"><div><div class="eyebrow">STEP 02 · 건축법 검토</div><h1>건축법 검토 체크리스트</h1><p>검토항목은 참고 후보입니다. 관련 법령의 적용 여부와 검토결과는 담당자가 결정합니다.</p></div><span class="status" id="legalStatus">검토 전</span></div>
+        <section class="panel legal-panel"><div class="panel-heading"><div><h2>담당자 확인 기반 검토</h2><span id="legalVersion">검토 기준 마스터</span></div><button class="btn outline" id="legalBuildButton" type="button">체크리스트 생성·재생성</button></div>
+          <div class="legal-intro"><p>건축개요를 먼저 확정해야 체크리스트를 생성할 수 있습니다. 각 항목의 적용 여부·진행 상태·검토의견을 직접 입력합니다. 이 화면은 법적 적합성을 판단하지 않습니다.</p><p class="legal-alert" id="legalWarning"></p><div id="legalProgress"></div></div>
+          <div id="legalItems" class="legal-items"></div>
+          <div class="legal-footer"><span>모든 항목의 적용 여부와 근거 의견을 확인한 후 기록을 확정하세요.</span><button type="button" class="btn success" id="legalConfirmButton">검토기록 확정</button></div>
+        </section>
+      </div>
     </main>
     <aside class="ai-sidebar">
       <div class="assistant-heading"><span class="assistant-icon">✦</span><div><strong>AI 업무 지원</strong><small>현재 단계 · 신청서 분석</small></div><span class="assistant-state">Phase 1</span></div>
