@@ -279,9 +279,9 @@ async function runAiReview(){
   }catch(e){indicator('AI 분석 실패','error');notify(e.message,true);}
   finally{renderAiReview();}
 }
-function renderBenchmark(report){
+function renderBenchmark(report, outputId='benchmarkOutput'){
   currentBenchmark=report;
-  const box=$('benchmarkOutput');box.replaceChildren();
+  const box=$(outputId);box.replaceChildren();
   box.append(create('div','benchmark-header',
     report.rules.summary.cases+'건 / 정답 '+report.rules.summary.expected_fields+'항목 · 합성자료 전용'));
   for(const [mode,label] of [['rules','규칙 기반 분석'],['ai','실제 LLM 분석']]){
@@ -314,6 +314,20 @@ function renderBenchmark(report){
     }
     table.append(body);details.append(table);box.append(details);
   }
+  if(report.practical){
+    const d=report.details_summary;
+    box.append(create('p','benchmark-disclaimer',`동별·층별·면적 구분 검증: ${d.correct}/${d.total}항목 일치`));
+    const detail=create('details','benchmark-details');
+    detail.append(create('summary','','PDF·엑셀 상세정보 검증 펼치기'));
+    const list=create('div','benchmark-practical-checks');
+    for(const item of report.rules.cases){
+      list.append(create('strong','',item.description));
+      for(const check of item.detail_score.checks){
+        list.append(create('p','',`${check.ok?'✓':'⚠'} ${check.item}: ${check.ok?'일치':'불일치'} (기대: ${JSON.stringify(check.expected)} / 분석: ${JSON.stringify(check.actual)})`));
+      }
+    }
+    detail.append(list);box.append(detail);
+  }
   box.append(create('p','benchmark-disclaimer',report.notice));
   if(report.mode==='rules')box.append(create('p','benchmark-disclaimer',
     '실제 AI 결과는 아직 없습니다. 실제 AI 모델을 연결하면 같은 정답으로 비교할 수 있습니다.'));
@@ -345,6 +359,21 @@ async function runBenchmark(mode){
     notify(mode==='ai'?'실제 AI 모델의 합성자료 성능 평가 완료':'로컬 규칙 분석 성능 평가 완료');
   }catch(e){notify('평가 실패: '+e.message,true);}
   finally{button.disabled=(mode==='ai'&&!aiEnabled);button.textContent=oldText;}
+}
+async function runPracticalBenchmark(mode){
+  if(mode==='ai'){
+    if(!aiEnabled){notify('Gemini 연결 설정이 필요합니다.',true);return;}
+    if(!$('externalAiConsent').checked){notify('상단의 합성 시험자료 전송 동의를 선택하세요.',true);return;}
+    if(!confirm('고정 합성 PDF·XLSX 4건에서 추출한 텍스트·셀 정보만 AI에 전송합니다. 원본 이미지는 보내지 않습니다. 최대 4회 진행할까요?'))return;
+  }
+  const button=$(mode==='ai'?'practicalAiButton':'practicalRulesButton');
+  const label=button.textContent;button.disabled=true;button.textContent='평가 진행 중...';
+  try{
+    const report=await api('/api/practical-benchmark',{method:'POST',json:{mode,consent:mode==='ai'}});
+    renderBenchmark(report,'practicalBenchmarkOutput');
+    notify(mode==='ai'?'Gemini 실무형 합성서식 평가 완료':'PDF·엑셀 규칙 평가 완료');
+  }catch(e){notify('실무형 평가 실패: '+e.message,true);}
+  finally{button.disabled=(mode==='ai'&&!aiEnabled);button.textContent=label;}
 }
 async function applyAiReview(){
   const ai=current?.ai_review;
@@ -417,6 +446,9 @@ function setup(){
   $('demoRunButton').addEventListener('click',runDemoReview);
   $('benchRulesButton').addEventListener('click',()=>runBenchmark('rules'));
   $('benchAiButton').addEventListener('click',()=>runBenchmark('ai'));
+  $('practicalRulesButton').addEventListener('click',()=>runPracticalBenchmark('rules'));
+  $('practicalAiButton').addEventListener('click',()=>runPracticalBenchmark('ai'));
+
   $('apiConnectTestButton').addEventListener('click',testApiConnection);
   $('aiApplyButton').addEventListener('click',applyAiReview);
   $('uploadButton').addEventListener('click',()=>$('applicationInput').click());
@@ -438,6 +470,7 @@ async function init(){
     const data=await api('/api/state');current=data.case;definitions=data.fields;
     aiEnabled=Boolean(data.ai_available);demoSha256=data.demo_sha256||'';
     $('benchAiButton').disabled=!aiEnabled;
+    $('practicalAiButton').disabled=!aiEnabled;
     $('apiConnectTestButton').disabled=!aiEnabled;
     $('aiConnectionModel').textContent=aiEnabled?'연결 설정 완료 · '+(data.ai_provider==='gemini'?'Google Gemini':data.ai_provider==='openai'?'OpenAI':'호환 API')+' · '+(data.ai_model||'모델 미지정'):'AI 서버 미연결 · 기본 서비스 Gemini · 로컬 규칙 분석 가능';
     $('aiMode').textContent=aiEnabled?`${data.ai_mode==='local'?'로컬':'외부'} AI 연결 가능 · 별도 실행`:'AI 미연결 · 규칙 분석 가능';
