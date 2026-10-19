@@ -134,6 +134,32 @@ def parse_seumteo(lines, allowed_keys):
                             set_value('above_ground_floors', val, row)
                         break
 
+    # When exported PDFs place simple values on the next text line,
+    # read only *immediate* neighbors of explicit first-page field labels.
+    # This applies to the site summary, never the following floor tables.
+    for i, row in enumerate(first_page[:-1]):
+        label = norm(row['text'])
+        following = first_page[i + 1]
+        raw_value = following['text'].strip()
+        if label in ('지상층수', '지하층수', '주건축물수'):
+            key = {'지상층수':'above_ground_floors',
+                   '지하층수':'underground_floors',
+                   '주건축물수':'building_count'}[label]
+            m = re.fullmatch(r'\s*(\d{1,3})\s*(?:층|동)?\s*', raw_value)
+            if m:
+                set_value(key, m.group(1), following, explanation='세움터 전체 개요 다음 줄')
+        elif label in ('특이사항', '특기사항') and raw_value.startswith('[모의]'):
+            set_value('notes', raw_value, following, explanation='세움터 특이사항 다음 줄')
+
+    # XLSX and XLS preserving cell coordinates: explicitly labelled notes.
+    for row in first_page:
+        cells = row.get('cells', [])
+        for i, cell in enumerate(cells[:-1]):
+            if norm(cell['text']) in ('특이사항', '특기사항'):
+                val = cells[i + 1]['text'].strip()
+                if val and not re.search(r'(면적|주용도|주구조|건축구분)', val):
+                    set_value('notes', val, row)
+
     # For PDF, only the form page-1 summary is read. Later page floor / building
     # area fragments are intentionally ignored to avoid overwriting total areas.
     page_text = '\n'.join(row['text'] for row in first_page)
@@ -160,36 +186,56 @@ def parse_seumteo(lines, allowed_keys):
                         break
                 break
 
-    # PDF first-page site and lot must come from their labelled rows.
+    # PDF site address is split over '대지위치' and a separate '지번' row.
+    # Only cadastral numbers explicitly printed in the corresponding first
+    # page field are merged. Never take the applicant's mailing address.
     if 'site_address' not in values:
-        for i, row in enumerate(first_page):
-            m=re.match(r'^\s*대지\s*위치\s*[:：]?\s*(.+)$',row['text'])
-            if not m: continue
-            district=m.group(1).strip()
-            if not district: continue
-            lot=''
-            for j in range(i+1,min(i+6,len(first_page))):
-                if re.fullmatch(r'\s*지\s*번\s*', first_page[j]['text']):
-                    if j+1<len(first_page):
-                        raw=first_page[j+1]['text'].strip()
-                        if re.fullmatch(r'\d{1,5}\s*(?:-\s*\d{1,5})?',raw):
-                            lot=re.sub(r'\s*-\s*','-',raw)
+        for idx, row in enumerate(first_page):
+            m = re.search(r'대지\s*위치\s*[:：]?\s*(.*)$', row['text'])
+            if not m:
+                continue
+            district = m.group(1).strip()
+            if not re.search(r'(?:시|군|구|읍|면|동|리)\s*$', district):
+                # Some forms print the street location on its own next line.
+                district = next((r['text'].strip() for r in first_page[idx+1:idx+3]
+                    if re.search(r'(?:시|군|구|읍|면|동|리)\s*$', r['text'].strip())), '')
+            if not district:
+                continue
+            lot = ''
+            lot_row = None
+            for label_row in first_page[idx+1:idx+6]:
+                # Do not confuse an inline '관련지번' reference with the site lot.
+                if re.fullmatch(r'\s*지\s*번\s*', label_row['text']):
+                    pos = first_page.index(label_row)
+                    for candidate in first_page[pos+1:pos+2]:
+                        number = candidate['text'].strip()
+                        if re.fullmatch(r'\d{1,5}\s*(?:-\s*\d{1,5})?', number):
+                            lot = re.sub(r'\s*-\s*', '-', number)
+                            lot_row = candidate
+                            break
                     break
-            set_value('site_address',district+(' '+lot if lot else ''),row,
-                      explanation='대지위치 및 지번 대조')
-            if lot and 'site_address' in sources:
-                sources['site_address']['evidence']=row['text']+' / 지번 '+lot
-                sources['site_address']['lot_line']=first_page[j+1]['n']
+            set_value('site_address', district + (' ' + lot if lot else ''), row,
+                      explanation='세움터 대지위치·지번 결합' if lot else '세움터 대지위치')
+            if lot_row and 'site_address' in sources:
+                sources['site_address']['evidence'] = (row['text'] + ' / 지번 ' + lot_row['text'])
+                sources['site_address']['lot_line'] = lot_row['n']
             break
 
-    # Use the overall Ⅰ.전체 개요 count only if numerically populated.
+    # Read a filled count on the same line OR the next PDF text line.
+    # An empty field stays empty, even when a building appears on page 2.
     if 'building_count' not in values:
-        for row in first_page:
-            if '주건축물수' not in norm(row['text']): continue
-            m=re.search(r'주\s*건축물\s*수\s*(\d{1,3})\s*동(?:\s|$)',row['text'])
+        for i, row in enumerate(first_page):
+            if '주건축물수' not in norm(row['text']):
+                continue
+            m = re.search(r'주\s*건축물\s*수\s*(\d{1,3})\s*동?(?:\s|$)', row['text'])
             if m:
-                set_value('building_count',m.group(1),row,
-                          explanation='전체 개요 명시적 주건축물수')
+                set_value('building_count', m.group(1), row, explanation='전체 개요 주건축물수')
+            elif norm(row['text']) == '주건축물수' and i + 1 < len(first_page):
+                following = first_page[i + 1]
+                n = re.fullmatch(r'\s*(\d{1,3})\s*(?:동)?\s*', following['text'])
+                if n:
+                    set_value('building_count', n.group(1), following,
+                              explanation='전체 개요 주건축물수 (다음 줄)')
             break
 
     # The primary use is often printed directly BELOW ⑤주용도 instead of after

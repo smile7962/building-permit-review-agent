@@ -35,3 +35,5 @@
 /* Phase 1.8 API link status; credentials are never rendered. */
 .api-connection-body{padding:14px 20px;color:var(--muted,#59667a);font-size:13px;line-height:1.6}
 @media(max-width:880px){.api-connection .panel-heading{flex-wrap:wrap;gap:12px}}
+
+.benchmark-practical-checks{padding:12px 16px;line-height:1.6;font-size:11px}.benchmark-practical-checks strong{display:block;margin:9px 0 4px}.benchmark-practical-checks p{margin:3px 0;color:#5b6981}
