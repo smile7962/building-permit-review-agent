@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 SCHEMA_VERSION = 1
+from legal_review import build as build_legal, snapshot as legal_hash, MASTER as LEGAL_MASTER, validate_edit as validate_legal_edit
 APPLICATION_ID = 0x42434153  # BCAS: distinguish our SQLite file
 
 
@@ -134,12 +135,20 @@ class CaseStore:
             history = con.execute("SELECT happened_at,action,detail FROM history ORDER BY id DESC LIMIT 12").fetchall()
             master_version = con.execute("SELECT value FROM metadata WHERE key='master_version'").fetchone()[0]
             detail_row = con.execute("SELECT payload_json FROM records WHERE category='application_details' ORDER BY id DESC LIMIT 1").fetchone()
+            legal_row = con.execute("SELECT payload_json FROM records WHERE category='legal_checklist' ORDER BY id DESC LIMIT 1").fetchone()
+            legal = json.loads(legal_row[0]) if legal_row else None
+            if legal:
+                latest_doc_sha = documents[0]['sha256'] if documents else None
+                legal['outdated'] = (legal['values_sha256'] != legal_hash(json.loads(row['values_json']))
+                    or legal['master_version'] != LEGAL_MASTER['version']
+                    or legal.get('document_sha256') != latest_doc_sha)
             ai_row = con.execute("SELECT payload_json FROM records WHERE category='ai_review' ORDER BY id DESC LIMIT 1").fetchone()
             ai = json.loads(ai_row[0]) if ai_row else None
             if not documents or (ai and ai.get('document_id') != documents[0]['id']):
                 ai = None
             return {
                 'ai_review': ai,
+                'legal_review': legal,
                 'case_id': row['case_id'],
                 'values': json.loads(row['values_json']),
                 'sources': json.loads(row['sources_json']),
@@ -315,6 +324,64 @@ class CaseStore:
                         (json.dumps(values,ensure_ascii=False),json.dumps(sources,ensure_ascii=False),t))
             con.execute('INSERT INTO history(happened_at,action,detail) VALUES (?,?,?)',
                         (t,'ai_apply',('담당자 선택 모의 항목 반영: ' if ai.get('mode') == 'demo' else '담당자 선택 AI 항목 반영: ')+', '.join(keys)))
+        return self.state()
+
+    def build_legal(self):
+        """Take a new snapshot; never preserve prior manual decisions on changed facts."""
+        with self.lock, self._connect() as con:
+            data=con.execute('SELECT values_json,confirmed_at FROM case_data WHERE id=1').fetchone()
+            if not data['confirmed_at']:
+                raise ValueError('STEP 01 건축개요를 담당자가 먼저 검토 확정하세요.')
+            payload=build_legal(json.loads(data['values_json']))
+            newest_doc=con.execute('SELECT sha256 FROM documents ORDER BY id DESC LIMIT 1').fetchone()
+            payload['document_sha256']=newest_doc['sha256'] if newest_doc else None
+            t=now()
+            con.execute("INSERT INTO records(category,cycle,payload_json,created_at) VALUES ('legal_checklist',NULL,?,?)",
+                        (json.dumps(payload,ensure_ascii=False),t))
+            con.execute("INSERT INTO history(happened_at,action,detail) VALUES (?,?,?)",
+                        (t,'legal_build','건축법 검토항목 후보 생성 · 담당자 판단 미실시'))
+        return self.state()
+
+    def update_legal(self,item_id,applicability,progress,note):
+        update=validate_legal_edit(item_id,applicability,progress,note)
+        with self.lock, self._connect() as con:
+            row=con.execute("SELECT id,payload_json FROM records WHERE category='legal_checklist' ORDER BY id DESC LIMIT 1").fetchone()
+            if not row:raise ValueError('먼저 건축법 검토 체크리스트를 생성하세요.')
+            review=json.loads(row['payload_json'])
+            vals=con.execute('SELECT values_json,confirmed_at FROM case_data WHERE id=1').fetchone()
+            newest_doc=con.execute('SELECT sha256 FROM documents ORDER BY id DESC LIMIT 1').fetchone()
+            newest_sha=newest_doc['sha256'] if newest_doc else None
+            if (review['values_sha256']!=legal_hash(json.loads(vals['values_json'])) or review['master_version']!=LEGAL_MASTER['version']
+                or review.get('document_sha256')!=newest_sha or not vals['confirmed_at']):
+                raise ValueError('건축개요 변경 또는 미확정 상태입니다. 1단계 확인 후 체크리스트를 다시 생성하세요.')
+            item=next((x for x in review['items'] if x['id']==item_id),None)
+            if not item:raise ValueError('해당 검토항목을 찾지 못했습니다.')
+            previous={k:item[k] for k in update}
+            if previous!=update:
+                item.update(update);item['reviewed_at']=now();review['confirmed_at']=None
+                con.execute('UPDATE records SET payload_json=? WHERE id=?',
+                            (json.dumps(review,ensure_ascii=False),row['id']))
+                con.execute('INSERT INTO history(happened_at,action,detail) VALUES (?,?,?)',
+                            (now(),'legal_edit',f'건축법 검토 {item_id}: 담당자 기록 수정, 확정 해제'))
+        return self.state()
+
+    def confirm_legal(self):
+        with self.lock, self._connect() as con:
+            row=con.execute("SELECT id,payload_json FROM records WHERE category='legal_checklist' ORDER BY id DESC LIMIT 1").fetchone()
+            if not row:raise ValueError('건축법 검토 체크리스트가 없습니다.')
+            review=json.loads(row['payload_json'])
+            data=con.execute('SELECT values_json,confirmed_at FROM case_data WHERE id=1').fetchone()
+            newest_doc=con.execute('SELECT sha256 FROM documents ORDER BY id DESC LIMIT 1').fetchone()
+            newest_sha=newest_doc['sha256'] if newest_doc else None
+            if (not data['confirmed_at'] or review['values_sha256']!=legal_hash(json.loads(data['values_json']))
+                or review['master_version']!=LEGAL_MASTER['version'] or review.get('document_sha256')!=newest_sha):
+                raise ValueError('건축개요가 변경되었거나 미확정입니다. 1단계를 확정하고 체크리스트를 다시 생성하세요.')
+            pending=[x['id'] for x in review['items'] if x['progress']!='검토기록완료' or x['applicability']=='미확인' or not x['note'].strip()]
+            if pending:raise ValueError('담당자 검토 기록이 미완료인 항목: '+', '.join(pending))
+            t=now();review['confirmed_at']=t
+            con.execute('UPDATE records SET payload_json=? WHERE id=?',(json.dumps(review,ensure_ascii=False),row['id']))
+            con.execute('INSERT INTO history(happened_at,action,detail) VALUES (?,?,?)',
+                        (t,'legal_confirm','담당자 건축법 체크리스트 검토기록 확정 (적법성 자동판정 아님)'))
         return self.state()
 
     def document(self, docid):
