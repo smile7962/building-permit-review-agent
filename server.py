@@ -23,7 +23,6 @@ from ai_review import ai_config, compare_ai, test_ai_connection
 from demo_review import compare_synthetic_demo, DEMO_FILE
 from benchmark import run_benchmark
 from realform_benchmark import run_realform_benchmark
-from practical_benchmark import run_practical_benchmark
 from synthetic_gate import require_approved_fixture, require_bundled_fixture_integrity
 from legal_review import MASTER as LEGAL_MASTER
 
@@ -49,7 +48,7 @@ def store():
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'BuildingPermitReview/0.2.0'
+    server_version = 'BuildingPermitReview/0.2.1'
 
     def _headers(self, status, mime='application/json; charset=utf-8', size=None, more=None):
         self.send_response(status)
@@ -202,6 +201,8 @@ class Handler(BaseHTTPRequestHandler):
             case = store().record_ai_review(draft, doc_id)
             self._json(200, {'case': case})
         elif parsed.path == '/api/realform-benchmark':
+            # Read-only, fixed bundled synthetic PDF fixtures; never sends
+            # case documents or extracted text to external model servers.
             self._json(200, run_realform_benchmark(FIELD_KEYS))
         elif parsed.path == '/api/benchmark':
             obj = json.loads(self._read(4 * 1024))
@@ -214,16 +215,6 @@ class Handler(BaseHTTPRequestHandler):
                 require_bundled_fixture_integrity()
             report = run_benchmark(mode, consent=obj.get('consent') is True,
                                    allowed_keys=FIELD_KEYS)
-            self._json(200, report)
-        elif parsed.path == '/api/practical-benchmark':
-            obj = json.loads(self._read(4 * 1024))
-            mode = obj.get('mode')
-            if mode not in ('rules', 'ai'):
-                raise ValueError('rules 또는 ai 평가 모드를 선택하세요.')
-            # Read-only: only built-in hashed, synthetic PDF/XLSX cases.
-            # Neither active case nor its uploaded documents are read.
-            report = run_practical_benchmark(mode, consent=obj.get('consent') is True,
-                                             allowed_keys=FIELD_KEYS)
             self._json(200, report)
         elif parsed.path == '/api/ai-apply':
             obj = json.loads(self._read(4 * 1024))
@@ -263,7 +254,7 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     store()
     httpd = ThreadingHTTPServer(('127.0.0.1', PORT), Handler)
-    print(f'건축인허가 AI 지원 v0.2.0 실행: http://127.0.0.1:{PORT}', flush=True)
+    print(f'건축인허가 AI 지원 v0.2.1 실행: http://127.0.0.1:{PORT}', flush=True)
     print('로컬 PC에서만 접근 가능합니다. 종료: Ctrl+C', flush=True)
     if os.environ.get('APP_NO_BROWSER') != '1':
         threading.Timer(0.8, lambda: webbrowser.open(f'http://127.0.0.1:{PORT}')).start()

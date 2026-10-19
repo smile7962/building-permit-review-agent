@@ -1,7 +1,7 @@
 {
-  "version": "2026-10-19-draft-1",
+  "version": "2026-10-19-detail-v2",
   "as_of": "2026-10-19",
-  "disclaimer": "실무 검토항목 후보 템플릿입니다. 법령 원문·시행일·조례·사실관계를 담당자가 확인해야 하며 적법성이나 적용 여부를 자동 판단하지 않습니다.",
+  "disclaimer": "이 자료는 법령 전수조사 결과나 법적 적합성 자동판정이 아닙니다. 신청서의 16개 기본정보만으로 적용 여부를 결정하지 않습니다. 사건별 적용기준일(시행일·부칙)과 최신 법령·파주시 조례·도면·공적자료는 담당자가 검증해야 합니다. 파주시 주차장 설치 및 관리 조례의 2027-01-01 시행 개정본을 2026년 사건에 소급 적용하지 마세요.",
   "items": [
     {
       "id": "C01",
@@ -14,7 +14,16 @@
         "permit_type",
         "work_type"
       ],
-      "condition": "all"
+      "condition": "all",
+      "level": "대표항목",
+      "parent_id": null,
+      "required_docs": [
+        "신청서",
+        "설계도서",
+        "현행 법령 원문"
+      ],
+      "reference_status": "원문·시행일 확인 필요",
+      "review_scope": "법령별 후보 항목 (자동 판정 금지)"
     },
     {
       "id": "C02",
@@ -26,7 +35,16 @@
       "fields": [
         "site_address"
       ],
-      "condition": "all"
+      "condition": "all",
+      "level": "대표항목",
+      "parent_id": null,
+      "required_docs": [
+        "신청서",
+        "설계도서",
+        "현행 법령 원문"
+      ],
+      "reference_status": "원문·시행일 확인 필요",
+      "review_scope": "법령별 후보 항목 (자동 판정 금지)"
     },
     {
       "id": "C03",
@@ -39,7 +57,16 @@
         "site_address",
         "primary_use"
       ],
-      "condition": "all"
+      "condition": "all",
+      "level": "대표항목",
+      "parent_id": null,
+      "required_docs": [
+        "신청서",
+        "설계도서",
+        "현행 법령 원문"
+      ],
+      "reference_status": "원문·시행일 확인 필요",
+      "review_scope": "법령별 후보 항목 (자동 판정 금지)"
     },
     {
       "id": "C04",
@@ -51,7 +78,16 @@
       "fields": [
         "primary_use"
       ],
-      "condition": "all"
+      "condition": "all",
+      "level": "대표항목",
+      "parent_id": null,
+      "required_docs": [
+        "신청서",
+        "설계도서",
+        "현행 법령 원문"
+      ],
+      "reference_status": "원문·시행일 확인 필요",
+      "review_scope": "법령별 후보 항목 (자동 판정 금지)"
     },
     {
       "id": "C05",
@@ -64,7 +100,16 @@
         "zoning",
         "primary_use"
       ],
-      "condition": "all"
+      "condition": "all",
+      "level": "대표항목",
+      "parent_id": null,
+      "required_docs": [
+        "신청서",
+        "설계도서",
+        "현행 법령 원문"
+      ],
+      "reference_status": "원문·시행일 확인 필요",
+      "review_scope": "법령별 후보 항목 (자동 판정 금지)"
     },
     {
       "id": "C06",
@@ -79,7 +124,16 @@
         "building_coverage_percent",
         "zoning"
       ],
-      "condition": "all"
+      "condition": "all",
+      "level": "대표항목",
+      "parent_id": null,
+      "required_docs": [
+        "신청서",
+        "설계도서",
+        "현행 법령 원문"
+      ],
+      "reference_status": "원문·시행일 확인 필요",
+      "review_scope": "법령별 후보 항목 (자동 판정 금지)"
     },
     {
       "id": "C07",
@@ -94,7 +148,16 @@
         "floor_area_ratio_percent",
         "zoning"
       ],
-      "condition": "all"
+      "condition": "all",
+      "level": "대표항목",
+      "parent_id": null,
+      "required_docs": [
+        "신청서",
+        "설계도서",
+        "현행 법령 원문"
+      ],
+      "reference_status": "원문·시행일 확인 필요",
+      "review_scope": "법령별 후보 항목 (자동 판정 금지)"
     },
     {
       "id": "C08",
@@ -108,7 +171,16 @@
         "primary_use",
         "above_ground_floors"
       ],
-      "condition": "residential_zoning"
+      "condition": "residential_zoning",
+      "level": "대표항목",
+      "parent_id": null,
+      "required_docs": [
+        "신청서",
+        "설계도서",
+        "현행 법령 원문"
+      ],
+      "reference_status": "원문·시행일 확인 필요",
+      "review_scope": "법령별 후보 항목 (자동 판정 금지)"
     },
     {
       "id": "C09",
@@ -122,7 +194,16 @@
         "above_ground_floors",
         "work_type"
       ],
-      "condition": "all"
+      "condition": "all",
+      "level": "대표항목",
+      "parent_id": null,
+      "required_docs": [
+        "신청서",
+        "설계도서",
+        "현행 법령 원문"
+      ],
+      "reference_status": "원문·시행일 확인 필요",
+      "review_scope": "법령별 후보 항목 (자동 판정 금지)"
     },
     {
       "id": "C10",
@@ -136,7 +217,16 @@
         "total_floor_area_m2",
         "above_ground_floors"
       ],
-      "condition": "all"
+      "condition": "all",
+      "level": "대표항목",
+      "parent_id": null,
+      "required_docs": [
+        "신청서",
+        "설계도서",
+        "현행 법령 원문"
+      ],
+      "reference_status": "원문·시행일 확인 필요",
+      "review_scope": "법령별 후보 항목 (자동 판정 금지)"
     },
     {
       "id": "C11",
@@ -150,7 +240,16 @@
         "parking_spaces",
         "work_type"
       ],
-      "condition": "all"
+      "condition": "all",
+      "level": "대표항목",
+      "parent_id": null,
+      "required_docs": [
+        "신청서",
+        "설계도서",
+        "현행 법령 원문"
+      ],
+      "reference_status": "원문·시행일 확인 필요",
+      "review_scope": "법령별 후보 항목 (자동 판정 금지)"
     },
     {
       "id": "C12",
@@ -164,7 +263,16 @@
         "zoning",
         "work_type"
       ],
-      "condition": "all"
+      "condition": "all",
+      "level": "대표항목",
+      "parent_id": null,
+      "required_docs": [
+        "신청서",
+        "설계도서",
+        "현행 법령 원문"
+      ],
+      "reference_status": "원문·시행일 확인 필요",
+      "review_scope": "법령별 후보 항목 (자동 판정 금지)"
     },
     {
       "id": "C13",
@@ -177,7 +285,16 @@
         "work_type",
         "total_floor_area_m2"
       ],
-      "condition": "alteration"
+      "condition": "alteration",
+      "level": "대표항목",
+      "parent_id": null,
+      "required_docs": [
+        "신청서",
+        "설계도서",
+        "현행 법령 원문"
+      ],
+      "reference_status": "원문·시행일 확인 필요",
+      "review_scope": "법령별 후보 항목 (자동 판정 금지)"
     },
     {
       "id": "C14",
@@ -190,7 +307,2560 @@
         "site_address",
         "notes"
       ],
-      "condition": "all"
+      "condition": "all",
+      "level": "대표항목",
+      "parent_id": null,
+      "required_docs": [
+        "신청서",
+        "설계도서",
+        "현행 법령 원문"
+      ],
+      "reference_status": "원문·시행일 확인 필요",
+      "review_scope": "법령별 후보 항목 (자동 판정 금지)"
+    },
+    {
+      "id": "D001",
+      "parent_id": "C01",
+      "level": "세부항목",
+      "group": "신청절차",
+      "title": "건축행위 유형 분류",
+      "basis": "「건축법」 제2조·제11조·제14조·제16조·제19조·제21조 및 하위 법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "신축·증축·개축·재축·이전·대수선·용도변경 중 실제 계획이 어느 유형인지 확인?",
+      "fields": [
+        "permit_type",
+        "work_type",
+        "primary_use"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "신청서",
+        "대장",
+        "건축개요",
+        "설계도서"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D002",
+      "parent_id": "C01",
+      "level": "세부항목",
+      "group": "신청절차",
+      "title": "건축허가와 건축신고 절차 구분",
+      "basis": "「건축법」 제2조·제11조·제14조·제16조·제19조·제21조 및 하위 법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "신청 규모·지역·용도 및 관련 법령에 비추어 허가 또는 신고 절차를 검토?",
+      "fields": [
+        "permit_type",
+        "work_type",
+        "primary_use"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "신청서",
+        "대장",
+        "건축개요",
+        "설계도서"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D003",
+      "parent_id": "C01",
+      "level": "세부항목",
+      "group": "신청절차",
+      "title": "대수선 판단과 처리절차",
+      "basis": "「건축법」 제2조·제11조·제14조·제16조·제19조·제21조 및 하위 법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "주요 구조부 또는 피난시설 등 변경범위가 대수선 정의에 해당하는지 확인?",
+      "fields": [
+        "permit_type",
+        "work_type",
+        "primary_use"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "신청서",
+        "대장",
+        "건축개요",
+        "설계도서"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D004",
+      "parent_id": "C01",
+      "level": "세부항목",
+      "group": "신청절차",
+      "title": "용도변경 허가·신고·기재변경 구분",
+      "basis": "「건축법」 제2조·제11조·제14조·제16조·제19조·제21조 및 하위 법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "종전 용도·변경 후 용도 및 시설군 등 절차 구분을 확인?",
+      "fields": [
+        "permit_type",
+        "work_type",
+        "primary_use"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "신청서",
+        "대장",
+        "건축개요",
+        "설계도서"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D005",
+      "parent_id": "C01",
+      "level": "세부항목",
+      "group": "신청절차",
+      "title": "허가사항 변경 여부",
+      "basis": "「건축법」 제2조·제11조·제14조·제16조·제19조·제21조 및 하위 법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "설계변경이 변경허가·변경신고 대상인지 최초 신청과 비교?",
+      "fields": [
+        "permit_type",
+        "work_type",
+        "primary_use"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "신청서",
+        "대장",
+        "건축개요",
+        "설계도서"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D006",
+      "parent_id": "C01",
+      "level": "세부항목",
+      "group": "신청절차",
+      "title": "대지 소유·사용권원과 신청 주체",
+      "basis": "「건축법」 제2조·제11조·제14조·제16조·제19조·제21조 및 하위 법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "토지·건물 소유관계, 사용승낙 및 신청 명의의 확인자료 검토?",
+      "fields": [
+        "permit_type",
+        "work_type",
+        "primary_use"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "신청서",
+        "대장",
+        "건축개요",
+        "설계도서"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D007",
+      "parent_id": "C01",
+      "level": "세부항목",
+      "group": "신청절차",
+      "title": "건축사 설계 및 제출도서 범위",
+      "basis": "「건축법」 제2조·제11조·제14조·제16조·제19조·제21조 및 하위 법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "설계자 자격과 건축관계 서류·도면의 법정 제출대상 확인?",
+      "fields": [
+        "permit_type",
+        "work_type",
+        "primary_use"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "신청서",
+        "대장",
+        "건축개요",
+        "설계도서"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D008",
+      "parent_id": "C01",
+      "level": "세부항목",
+      "group": "신청절차",
+      "title": "착공·사용승인 관련 후속요건 안내",
+      "basis": "「건축법」 제2조·제11조·제14조·제16조·제19조·제21조 및 하위 법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "신청단계에서 확인해야 할 착공신고·사용승인·별도 행정절차를 기록?",
+      "fields": [
+        "permit_type",
+        "work_type",
+        "primary_use"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "신청서",
+        "대장",
+        "건축개요",
+        "설계도서"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D009",
+      "parent_id": "C03",
+      "level": "세부항목",
+      "group": "대지·경계",
+      "title": "필지·대지범위 대조",
+      "basis": "「건축법」 제40조·제41조·제42조·제43조·제58조 및 파주시 건축 조례(현행 확인)",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "신청 대지와 토지대장·지적도·토지이용계획의 필지를 대조?",
+      "fields": [
+        "site_address",
+        "site_area_m2",
+        "zoning"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지대장",
+        "지적도",
+        "현황측량",
+        "배치도",
+        "조례"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D010",
+      "parent_id": "C03",
+      "level": "세부항목",
+      "group": "대지·경계",
+      "title": "지적 경계와 건축물 배치",
+      "basis": "「건축법」 제40조·제41조·제42조·제43조·제58조 및 파주시 건축 조례(현행 확인)",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "배치도상 경계·옹벽·기존 시설물 현황을 공적 측량자료와 비교?",
+      "fields": [
+        "site_address",
+        "site_area_m2",
+        "zoning"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지대장",
+        "지적도",
+        "현황측량",
+        "배치도",
+        "조례"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D011",
+      "parent_id": "C03",
+      "level": "세부항목",
+      "group": "대지·경계",
+      "title": "대지 조성 및 성토·절토",
+      "basis": "「건축법」 제40조·제41조·제42조·제43조·제58조 및 파주시 건축 조례(현행 확인)",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "성토·절토, 인접대지 안전, 경사지 조성계획의 법령·관계허가 필요 여부 검토?",
+      "fields": [
+        "site_address",
+        "site_area_m2",
+        "zoning"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지대장",
+        "지적도",
+        "현황측량",
+        "배치도",
+        "조례"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D012",
+      "parent_id": "C03",
+      "level": "세부항목",
+      "group": "대지·경계",
+      "title": "배수·우수 처리",
+      "basis": "「건축법」 제40조·제41조·제42조·제43조·제58조 및 파주시 건축 조례(현행 확인)",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "지표수·오수·우수의 배출경로와 인접 토지에 미칠 영향을 도면으로 확인?",
+      "fields": [
+        "site_address",
+        "site_area_m2",
+        "zoning"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지대장",
+        "지적도",
+        "현황측량",
+        "배치도",
+        "조례"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D013",
+      "parent_id": "C03",
+      "level": "세부항목",
+      "group": "대지·경계",
+      "title": "옹벽·축대 안전",
+      "basis": "「건축법」 제40조·제41조·제42조·제43조·제58조 및 파주시 건축 조례(현행 확인)",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "옹벽 높이·구조 및 구조기술 검토와 별도 공작물 관련 절차를 확인?",
+      "fields": [
+        "site_address",
+        "site_area_m2",
+        "zoning"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지대장",
+        "지적도",
+        "현황측량",
+        "배치도",
+        "조례"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D014",
+      "parent_id": "C03",
+      "level": "세부항목",
+      "group": "대지·경계",
+      "title": "대지의 조경",
+      "basis": "「건축법」 제40조·제41조·제42조·제43조·제58조 및 파주시 건축 조례(현행 확인)",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "대지 조경의 대상·면적·예외 및 파주시 건축 조례 위임기준 확인?",
+      "fields": [
+        "site_address",
+        "site_area_m2",
+        "zoning"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지대장",
+        "지적도",
+        "현황측량",
+        "배치도",
+        "조례"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D015",
+      "parent_id": "C03",
+      "level": "세부항목",
+      "group": "대지·경계",
+      "title": "대지 안의 공지",
+      "basis": "「건축법」 제40조·제41조·제42조·제43조·제58조 및 파주시 건축 조례(현행 확인)",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "건축물 용도·규모별 건축선 및 인접대지 이격 조례 기준을 확인?",
+      "fields": [
+        "site_address",
+        "site_area_m2",
+        "zoning"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지대장",
+        "지적도",
+        "현황측량",
+        "배치도",
+        "조례"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D016",
+      "parent_id": "C03",
+      "level": "세부항목",
+      "group": "대지·경계",
+      "title": "대지의 분할·합필과 대지 요건",
+      "basis": "「건축법」 제40조·제41조·제42조·제43조·제58조 및 파주시 건축 조례(현행 확인)",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "인허가 후 필지 변경, 분할·합필, 대지 요건 충족에 관한 근거자료 확인?",
+      "fields": [
+        "site_address",
+        "site_area_m2",
+        "zoning"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지대장",
+        "지적도",
+        "현황측량",
+        "배치도",
+        "조례"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D017",
+      "parent_id": "C02",
+      "level": "세부항목",
+      "group": "도로·접도",
+      "title": "건축법상 도로 정의",
+      "basis": "「건축법」 제2조제1항제11호·제44조·제45조·제46조 및 관련 시행령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "현황 통행로가 건축법상 도로인지 도로 개설·지정·공고 자료로 확인?",
+      "fields": [
+        "site_address",
+        "zoning"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "지적도",
+        "토지이용계획",
+        "도로대장",
+        "지정공고",
+        "현황사진",
+        "배치도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D018",
+      "parent_id": "C02",
+      "level": "세부항목",
+      "group": "도로·접도",
+      "title": "도로 지정·공고 이력",
+      "basis": "「건축법」 제2조제1항제11호·제44조·제45조·제46조 및 관련 시행령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "허가시 지정된 도로, 지정 공고 및 관련 지적·도로대장을 확인?",
+      "fields": [
+        "site_address",
+        "zoning"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "지적도",
+        "토지이용계획",
+        "도로대장",
+        "지정공고",
+        "현황사진",
+        "배치도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D019",
+      "parent_id": "C02",
+      "level": "세부항목",
+      "group": "도로·접도",
+      "title": "대지 접도 길이",
+      "basis": "「건축법」 제2조제1항제11호·제44조·제45조·제46조 및 관련 시행령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "대지가 건축법상 도로에 접한 길이와 적용 특례 여부를 배치도로 확인?",
+      "fields": [
+        "site_address",
+        "zoning"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "지적도",
+        "토지이용계획",
+        "도로대장",
+        "지정공고",
+        "현황사진",
+        "배치도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D020",
+      "parent_id": "C02",
+      "level": "세부항목",
+      "group": "도로·접도",
+      "title": "도로 폭 및 위치",
+      "basis": "「건축법」 제2조제1항제11호·제44조·제45조·제46조 및 관련 시행령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "도로의 법정 폭·실제 폭·측량선과 계획도로 여부를 검토?",
+      "fields": [
+        "site_address",
+        "zoning"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "지적도",
+        "토지이용계획",
+        "도로대장",
+        "지정공고",
+        "현황사진",
+        "배치도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D021",
+      "parent_id": "C02",
+      "level": "세부항목",
+      "group": "도로·접도",
+      "title": "건축선 후퇴·도로 모퉁이",
+      "basis": "「건축법」 제2조제1항제11호·제44조·제45조·제46조 및 관련 시행령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "건축선 후퇴 및 모퉁이 기준 적용 여부를 확인?",
+      "fields": [
+        "site_address",
+        "zoning"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "지적도",
+        "토지이용계획",
+        "도로대장",
+        "지정공고",
+        "현황사진",
+        "배치도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D022",
+      "parent_id": "C02",
+      "level": "세부항목",
+      "group": "도로·접도",
+      "title": "통행로 토지 사용관계",
+      "basis": "「건축법」 제2조제1항제11호·제44조·제45조·제46조 및 관련 시행령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "국공유지·사유지 도로 여부, 사용권원·점용·사도 관련 별도 절차를 확인?",
+      "fields": [
+        "site_address",
+        "zoning"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "지적도",
+        "토지이용계획",
+        "도로대장",
+        "지정공고",
+        "현황사진",
+        "배치도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D023",
+      "parent_id": "C02",
+      "level": "세부항목",
+      "group": "도로·접도",
+      "title": "접도 예외 또는 특례",
+      "basis": "「건축법」 제2조제1항제11호·제44조·제45조·제46조 및 관련 시행령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "건축법상 접도 의무 예외의 법적 요건과 허가권자 판단근거 확인?",
+      "fields": [
+        "site_address",
+        "zoning"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "지적도",
+        "토지이용계획",
+        "도로대장",
+        "지정공고",
+        "현황사진",
+        "배치도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D024",
+      "parent_id": "C02",
+      "level": "세부항목",
+      "group": "도로·접도",
+      "title": "차량 진출입과 도로 안전",
+      "basis": "「건축법」 제2조제1항제11호·제44조·제45조·제46조 및 관련 시행령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "도로점용·연결·진출입구 협의 및 교통안전 관련 별도 검토 확인?",
+      "fields": [
+        "site_address",
+        "zoning"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "지적도",
+        "토지이용계획",
+        "도로대장",
+        "지정공고",
+        "현황사진",
+        "배치도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D025",
+      "parent_id": "C05",
+      "level": "세부항목",
+      "group": "용도·입지·도시계획",
+      "title": "건축물 세부 용도분류",
+      "basis": "「건축법」 제2조, 「건축법 시행령」 별표 1, 「국토의 계획 및 이용에 관한 법률」 제56조·제58조·제76조·제77조·제78조 및 파주시 도시계획 조례",
+      "url": "https://www.law.go.kr/법령/국토의계획및이용에관한법률",
+      "question": "운영 방식·사업내용을 고려해 시행령 별표1의 세부 용도 명칭을 검토?",
+      "fields": [
+        "site_address",
+        "zoning",
+        "primary_use"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지이용계획확인서",
+        "용도분류표",
+        "지구단위계획",
+        "도시계획조례"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D026",
+      "parent_id": "C05",
+      "level": "세부항목",
+      "group": "용도·입지·도시계획",
+      "title": "복합용도 및 부속용도",
+      "basis": "「건축법」 제2조, 「건축법 시행령」 별표 1, 「국토의 계획 및 이용에 관한 법률」 제56조·제58조·제76조·제77조·제78조 및 파주시 도시계획 조례",
+      "url": "https://www.law.go.kr/법령/국토의계획및이용에관한법률",
+      "question": "건축물 동별·층별 실제 이용형태와 부속용도 구분을 확인?",
+      "fields": [
+        "site_address",
+        "zoning",
+        "primary_use"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지이용계획확인서",
+        "용도분류표",
+        "지구단위계획",
+        "도시계획조례"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D027",
+      "parent_id": "C05",
+      "level": "세부항목",
+      "group": "용도·입지·도시계획",
+      "title": "용도지역·지구·구역",
+      "basis": "「건축법」 제2조, 「건축법 시행령」 별표 1, 「국토의 계획 및 이용에 관한 법률」 제56조·제58조·제76조·제77조·제78조 및 파주시 도시계획 조례",
+      "url": "https://www.law.go.kr/법령/국토의계획및이용에관한법률",
+      "question": "토지이용계획확인서상 용도지역·지구·구역의 전체 중첩사항 검토?",
+      "fields": [
+        "site_address",
+        "zoning",
+        "primary_use"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지이용계획확인서",
+        "용도분류표",
+        "지구단위계획",
+        "도시계획조례"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D028",
+      "parent_id": "C05",
+      "level": "세부항목",
+      "group": "용도·입지·도시계획",
+      "title": "용도지역별 허용 건축물",
+      "basis": "「건축법」 제2조, 「건축법 시행령」 별표 1, 「국토의 계획 및 이용에 관한 법률」 제56조·제58조·제76조·제77조·제78조 및 파주시 도시계획 조례",
+      "url": "https://www.law.go.kr/법령/국토의계획및이용에관한법률",
+      "question": "국토계획법 시행령·도시계획조례 별표 등 해당 용도지역 건축제한 검토?",
+      "fields": [
+        "site_address",
+        "zoning",
+        "primary_use"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지이용계획확인서",
+        "용도분류표",
+        "지구단위계획",
+        "도시계획조례"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D029",
+      "parent_id": "C05",
+      "level": "세부항목",
+      "group": "용도·입지·도시계획",
+      "title": "지구단위계획 및 별도 도시계획",
+      "basis": "「건축법」 제2조, 「건축법 시행령」 별표 1, 「국토의 계획 및 이용에 관한 법률」 제56조·제58조·제76조·제77조·제78조 및 파주시 도시계획 조례",
+      "url": "https://www.law.go.kr/법령/국토의계획및이용에관한법률",
+      "question": "지구단위계획, 도시관리계획, 도시계획시설 저촉 여부를 확인?",
+      "fields": [
+        "site_address",
+        "zoning",
+        "primary_use"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지이용계획확인서",
+        "용도분류표",
+        "지구단위계획",
+        "도시계획조례"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D030",
+      "parent_id": "C05",
+      "level": "세부항목",
+      "group": "용도·입지·도시계획",
+      "title": "개발행위허가 필요성",
+      "basis": "「건축법」 제2조, 「건축법 시행령」 별표 1, 「국토의 계획 및 이용에 관한 법률」 제56조·제58조·제76조·제77조·제78조 및 파주시 도시계획 조례",
+      "url": "https://www.law.go.kr/법령/국토의계획및이용에관한법률",
+      "question": "형질변경·건축행위와 관련한 개발행위허가 및 의제 협의 필요 여부 확인?",
+      "fields": [
+        "site_address",
+        "zoning",
+        "primary_use"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지이용계획확인서",
+        "용도분류표",
+        "지구단위계획",
+        "도시계획조례"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D031",
+      "parent_id": "C05",
+      "level": "세부항목",
+      "group": "용도·입지·도시계획",
+      "title": "개발행위 허가 기준",
+      "basis": "「건축법」 제2조, 「건축법 시행령」 별표 1, 「국토의 계획 및 이용에 관한 법률」 제56조·제58조·제76조·제77조·제78조 및 파주시 도시계획 조례",
+      "url": "https://www.law.go.kr/법령/국토의계획및이용에관한법률",
+      "question": "경관·안전·기반시설 등 개발행위 허가기준 검토 자료 확보?",
+      "fields": [
+        "site_address",
+        "zoning",
+        "primary_use"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지이용계획확인서",
+        "용도분류표",
+        "지구단위계획",
+        "도시계획조례"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D032",
+      "parent_id": "C05",
+      "level": "세부항목",
+      "group": "용도·입지·도시계획",
+      "title": "건폐율 지역별 기준",
+      "basis": "「건축법」 제2조, 「건축법 시행령」 별표 1, 「국토의 계획 및 이용에 관한 법률」 제56조·제58조·제76조·제77조·제78조 및 파주시 도시계획 조례",
+      "url": "https://www.law.go.kr/법령/국토의계획및이용에관한법률",
+      "question": "계획 용도지역·지구별 건폐율 기준과 중첩 제한·완화 근거 검토?",
+      "fields": [
+        "site_address",
+        "zoning",
+        "primary_use"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지이용계획확인서",
+        "용도분류표",
+        "지구단위계획",
+        "도시계획조례"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D033",
+      "parent_id": "C05",
+      "level": "세부항목",
+      "group": "용도·입지·도시계획",
+      "title": "용적률 지역별 기준",
+      "basis": "「건축법」 제2조, 「건축법 시행령」 별표 1, 「국토의 계획 및 이용에 관한 법률」 제56조·제58조·제76조·제77조·제78조 및 파주시 도시계획 조례",
+      "url": "https://www.law.go.kr/법령/국토의계획및이용에관한법률",
+      "question": "용적률 기준 및 특례·완화 근거, 산정 연면적을 확인?",
+      "fields": [
+        "site_address",
+        "zoning",
+        "primary_use"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지이용계획확인서",
+        "용도분류표",
+        "지구단위계획",
+        "도시계획조례"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D034",
+      "parent_id": "C06",
+      "level": "세부항목",
+      "group": "면적·높이·규모",
+      "title": "대지면적 산정",
+      "basis": "「건축법」 제55조·제56조·제60조·제61조 및 「건축법 시행령」 제119조 등",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "대지경계·건축선 후퇴 및 산정 제외 대상 포함 여부 검토?",
+      "fields": [
+        "site_area_m2",
+        "building_area_m2",
+        "total_floor_area_m2",
+        "building_coverage_percent",
+        "floor_area_ratio_percent",
+        "above_ground_floors",
+        "underground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "면적산출표",
+        "평면도",
+        "단면도",
+        "배치도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D035",
+      "parent_id": "C06",
+      "level": "세부항목",
+      "group": "면적·높이·규모",
+      "title": "건축면적 산정",
+      "basis": "「건축법」 제55조·제56조·제60조·제61조 및 「건축법 시행령」 제119조 등",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "건축면적 산정 기준과 돌출부·필로티 등 특례·제외항목 확인?",
+      "fields": [
+        "site_area_m2",
+        "building_area_m2",
+        "total_floor_area_m2",
+        "building_coverage_percent",
+        "floor_area_ratio_percent",
+        "above_ground_floors",
+        "underground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "면적산출표",
+        "평면도",
+        "단면도",
+        "배치도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D036",
+      "parent_id": "C06",
+      "level": "세부항목",
+      "group": "면적·높이·규모",
+      "title": "연면적 산정",
+      "basis": "「건축법」 제55조·제56조·제60조·제61조 및 「건축법 시행령」 제119조 등",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "층별 면적 합계와 건축물 전체 연면적 일치 여부 확인?",
+      "fields": [
+        "site_area_m2",
+        "building_area_m2",
+        "total_floor_area_m2",
+        "building_coverage_percent",
+        "floor_area_ratio_percent",
+        "above_ground_floors",
+        "underground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "면적산출표",
+        "평면도",
+        "단면도",
+        "배치도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D037",
+      "parent_id": "C06",
+      "level": "세부항목",
+      "group": "면적·높이·규모",
+      "title": "용적률 산정용 연면적",
+      "basis": "「건축법」 제55조·제56조·제60조·제61조 및 「건축법 시행령」 제119조 등",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "용적률 산정 시 제외 가능한 면적에 해당하는지 법적 근거 확인?",
+      "fields": [
+        "site_area_m2",
+        "building_area_m2",
+        "total_floor_area_m2",
+        "building_coverage_percent",
+        "floor_area_ratio_percent",
+        "above_ground_floors",
+        "underground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "면적산출표",
+        "평면도",
+        "단면도",
+        "배치도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D038",
+      "parent_id": "C06",
+      "level": "세부항목",
+      "group": "면적·높이·규모",
+      "title": "건폐율 산식 대조",
+      "basis": "「건축법」 제55조·제56조·제60조·제61조 및 「건축법 시행령」 제119조 등",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "대지면적과 건축면적의 산술 일치 여부를 확인하되 법적 상한 판단은 별도 검토?",
+      "fields": [
+        "site_area_m2",
+        "building_area_m2",
+        "total_floor_area_m2",
+        "building_coverage_percent",
+        "floor_area_ratio_percent",
+        "above_ground_floors",
+        "underground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "면적산출표",
+        "평면도",
+        "단면도",
+        "배치도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D039",
+      "parent_id": "C06",
+      "level": "세부항목",
+      "group": "면적·높이·규모",
+      "title": "용적률 산식 대조",
+      "basis": "「건축법」 제55조·제56조·제60조·제61조 및 「건축법 시행령」 제119조 등",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "대지면적과 용적률 산정용 연면적의 산술 일치 여부 확인?",
+      "fields": [
+        "site_area_m2",
+        "building_area_m2",
+        "total_floor_area_m2",
+        "building_coverage_percent",
+        "floor_area_ratio_percent",
+        "above_ground_floors",
+        "underground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "면적산출표",
+        "평면도",
+        "단면도",
+        "배치도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D040",
+      "parent_id": "C06",
+      "level": "세부항목",
+      "group": "면적·높이·규모",
+      "title": "층수·높이 산정",
+      "basis": "「건축법」 제55조·제56조·제60조·제61조 및 「건축법 시행령」 제119조 등",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "지하층·지상층, 최고높이, 처마·옥탑·반자 관련 높이 산정 기준 확인?",
+      "fields": [
+        "site_area_m2",
+        "building_area_m2",
+        "total_floor_area_m2",
+        "building_coverage_percent",
+        "floor_area_ratio_percent",
+        "above_ground_floors",
+        "underground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "면적산출표",
+        "평면도",
+        "단면도",
+        "배치도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D041",
+      "parent_id": "C06",
+      "level": "세부항목",
+      "group": "면적·높이·규모",
+      "title": "정북방향 일조 이격",
+      "basis": "「건축법」 제55조·제56조·제60조·제61조 및 「건축법 시행령」 제119조 등",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "용도지역에 따른 정북방향 일조높이 제한 적용 조건을 현행 법령으로 확인?",
+      "fields": [
+        "site_area_m2",
+        "building_area_m2",
+        "total_floor_area_m2",
+        "building_coverage_percent",
+        "floor_area_ratio_percent",
+        "above_ground_floors",
+        "underground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "면적산출표",
+        "평면도",
+        "단면도",
+        "배치도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D042",
+      "parent_id": "C06",
+      "level": "세부항목",
+      "group": "면적·높이·규모",
+      "title": "공동주택 채광·인동간격",
+      "basis": "「건축법」 제55조·제56조·제60조·제61조 및 「건축법 시행령」 제119조 등",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "공동주택 등의 채광 관련 높이·거리 기준 적용 여부 확인?",
+      "fields": [
+        "site_area_m2",
+        "building_area_m2",
+        "total_floor_area_m2",
+        "building_coverage_percent",
+        "floor_area_ratio_percent",
+        "above_ground_floors",
+        "underground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "면적산출표",
+        "평면도",
+        "단면도",
+        "배치도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D043",
+      "parent_id": "C06",
+      "level": "세부항목",
+      "group": "면적·높이·규모",
+      "title": "높이 제한 및 특례",
+      "basis": "「건축법」 제55조·제56조·제60조·제61조 및 「건축법 시행령」 제119조 등",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "도로·가로구역·특별구역 등에 따른 높이 기준과 별도 기준 검토?",
+      "fields": [
+        "site_area_m2",
+        "building_area_m2",
+        "total_floor_area_m2",
+        "building_coverage_percent",
+        "floor_area_ratio_percent",
+        "above_ground_floors",
+        "underground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "면적산출표",
+        "평면도",
+        "단면도",
+        "배치도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D044",
+      "parent_id": "C09",
+      "level": "세부항목",
+      "group": "구조·안전",
+      "title": "구조안전 확인 대상",
+      "basis": "「건축법」 제48조·제48조의3, 관계 구조기준 및 관련 하위 법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "규모·층수·구조·건축구분에 따른 구조 관련 확인서류 대상 검토?",
+      "fields": [
+        "structure",
+        "total_floor_area_m2",
+        "above_ground_floors",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "구조도",
+        "구조계산서",
+        "지반조사",
+        "구조안전 확인자료"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D045",
+      "parent_id": "C09",
+      "level": "세부항목",
+      "group": "구조·안전",
+      "title": "구조계산서·구조도서 제출",
+      "basis": "「건축법」 제48조·제48조의3, 관계 구조기준 및 관련 하위 법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "구조계산·설계도서와 건축계획 도면의 구조 일치 검토?",
+      "fields": [
+        "structure",
+        "total_floor_area_m2",
+        "above_ground_floors",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "구조도",
+        "구조계산서",
+        "지반조사",
+        "구조안전 확인자료"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D046",
+      "parent_id": "C09",
+      "level": "세부항목",
+      "group": "구조·안전",
+      "title": "내진설계 대상",
+      "basis": "「건축법」 제48조·제48조의3, 관계 구조기준 및 관련 하위 법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "용도·규모·구조별 내진설계·내진능력 관련 대상 확인?",
+      "fields": [
+        "structure",
+        "total_floor_area_m2",
+        "above_ground_floors",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "구조도",
+        "구조계산서",
+        "지반조사",
+        "구조안전 확인자료"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D047",
+      "parent_id": "C09",
+      "level": "세부항목",
+      "group": "구조·안전",
+      "title": "기초·지반조사",
+      "basis": "「건축법」 제48조·제48조의3, 관계 구조기준 및 관련 하위 법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "대지 지반조건·기초형식·지반조사 필요 여부 확인?",
+      "fields": [
+        "structure",
+        "total_floor_area_m2",
+        "above_ground_floors",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "구조도",
+        "구조계산서",
+        "지반조사",
+        "구조안전 확인자료"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D048",
+      "parent_id": "C09",
+      "level": "세부항목",
+      "group": "구조·안전",
+      "title": "기존 구조체 연계·증축",
+      "basis": "「건축법」 제48조·제48조의3, 관계 구조기준 및 관련 하위 법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "증축·개축·대수선 시 기존 구조체 접합 및 보강 검토?",
+      "fields": [
+        "structure",
+        "total_floor_area_m2",
+        "above_ground_floors",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "구조도",
+        "구조계산서",
+        "지반조사",
+        "구조안전 확인자료"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D049",
+      "parent_id": "C09",
+      "level": "세부항목",
+      "group": "구조·안전",
+      "title": "굴착·흙막이·인접 영향",
+      "basis": "「건축법」 제48조·제48조의3, 관계 구조기준 및 관련 하위 법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "지하 굴착, 흙막이 및 인접 구조물 안전관리 계획 대상 확인?",
+      "fields": [
+        "structure",
+        "total_floor_area_m2",
+        "above_ground_floors",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "구조도",
+        "구조계산서",
+        "지반조사",
+        "구조안전 확인자료"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D050",
+      "parent_id": "C09",
+      "level": "세부항목",
+      "group": "구조·안전",
+      "title": "특수구조 건축물 검토",
+      "basis": "「건축법」 제48조·제48조의3, 관계 구조기준 및 관련 하위 법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "특수구조·대공간·고층 등 구조 전문 검토 대상 확인?",
+      "fields": [
+        "structure",
+        "total_floor_area_m2",
+        "above_ground_floors",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "구조도",
+        "구조계산서",
+        "지반조사",
+        "구조안전 확인자료"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D051",
+      "parent_id": "C10",
+      "level": "세부항목",
+      "group": "피난·방화",
+      "title": "직통계단·피난계단",
+      "basis": "「건축법」 제49조·제50조·제50조의2·제51조·제52조, 「건축물의 피난ㆍ방화구조 등의 기준에 관한 규칙」",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "용도·층수·면적에 따른 직통계단, 피난·특별피난계단 여부 확인?",
+      "fields": [
+        "primary_use",
+        "total_floor_area_m2",
+        "above_ground_floors",
+        "underground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "층별 평면도",
+        "피난동선도",
+        "단면도",
+        "방화구획도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D052",
+      "parent_id": "C10",
+      "level": "세부항목",
+      "group": "피난·방화",
+      "title": "피난계단 거리·배치",
+      "basis": "「건축법」 제49조·제50조·제50조의2·제51조·제52조, 「건축물의 피난ㆍ방화구조 등의 기준에 관한 규칙」",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "피난거리·계단간 이격 등 피난 계획과 관련 기준 확인?",
+      "fields": [
+        "primary_use",
+        "total_floor_area_m2",
+        "above_ground_floors",
+        "underground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "층별 평면도",
+        "피난동선도",
+        "단면도",
+        "방화구획도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D053",
+      "parent_id": "C10",
+      "level": "세부항목",
+      "group": "피난·방화",
+      "title": "복도·출입구·계단 폭",
+      "basis": "「건축법」 제49조·제50조·제50조의2·제51조·제52조, 「건축물의 피난ㆍ방화구조 등의 기준에 관한 규칙」",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "피난 시설의 폭·구조·출입방향 관련 상세 기준 확인?",
+      "fields": [
+        "primary_use",
+        "total_floor_area_m2",
+        "above_ground_floors",
+        "underground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "층별 평면도",
+        "피난동선도",
+        "단면도",
+        "방화구획도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D054",
+      "parent_id": "C10",
+      "level": "세부항목",
+      "group": "피난·방화",
+      "title": "방화구획 대상과 면적",
+      "basis": "「건축법」 제49조·제50조·제50조의2·제51조·제52조, 「건축물의 피난ㆍ방화구조 등의 기준에 관한 규칙」",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "구획면적·층별 구획 및 구획 완화 요건 확인?",
+      "fields": [
+        "primary_use",
+        "total_floor_area_m2",
+        "above_ground_floors",
+        "underground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "층별 평면도",
+        "피난동선도",
+        "단면도",
+        "방화구획도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D055",
+      "parent_id": "C10",
+      "level": "세부항목",
+      "group": "피난·방화",
+      "title": "방화문·방화셔터",
+      "basis": "「건축법」 제49조·제50조·제50조의2·제51조·제52조, 「건축물의 피난ㆍ방화구조 등의 기준에 관한 규칙」",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "방화구획 개구부의 문·셔터의 설치·성능 자료 확인?",
+      "fields": [
+        "primary_use",
+        "total_floor_area_m2",
+        "above_ground_floors",
+        "underground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "층별 평면도",
+        "피난동선도",
+        "단면도",
+        "방화구획도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D056",
+      "parent_id": "C10",
+      "level": "세부항목",
+      "group": "피난·방화",
+      "title": "내화구조 적용 범위",
+      "basis": "「건축법」 제49조·제50조·제50조의2·제51조·제52조, 「건축물의 피난ㆍ방화구조 등의 기준에 관한 규칙」",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "주요구조부·지붕의 내화구조 적용 대상 및 예외 검토?",
+      "fields": [
+        "primary_use",
+        "total_floor_area_m2",
+        "above_ground_floors",
+        "underground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "층별 평면도",
+        "피난동선도",
+        "단면도",
+        "방화구획도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D057",
+      "parent_id": "C10",
+      "level": "세부항목",
+      "group": "피난·방화",
+      "title": "방화벽 및 연소확대 방지",
+      "basis": "「건축법」 제49조·제50조·제50조의2·제51조·제52조, 「건축물의 피난ㆍ방화구조 등의 기준에 관한 규칙」",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "방화벽·인접대지와의 개구부 관련 대책 여부 검토?",
+      "fields": [
+        "primary_use",
+        "total_floor_area_m2",
+        "above_ground_floors",
+        "underground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "층별 평면도",
+        "피난동선도",
+        "단면도",
+        "방화구획도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D058",
+      "parent_id": "C10",
+      "level": "세부항목",
+      "group": "피난·방화",
+      "title": "방화지구 구조 제한",
+      "basis": "「건축법」 제49조·제50조·제50조의2·제51조·제52조, 「건축물의 피난ㆍ방화구조 등의 기준에 관한 규칙」",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "방화지구 또는 특정 용도에 대한 외벽·지붕·개구부 기준 확인?",
+      "fields": [
+        "primary_use",
+        "total_floor_area_m2",
+        "above_ground_floors",
+        "underground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "층별 평면도",
+        "피난동선도",
+        "단면도",
+        "방화구획도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D059",
+      "parent_id": "C10",
+      "level": "세부항목",
+      "group": "피난·방화",
+      "title": "내부 마감재료 성능",
+      "basis": "「건축법」 제49조·제50조·제50조의2·제51조·제52조, 「건축물의 피난ㆍ방화구조 등의 기준에 관한 규칙」",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "용도·규모별 내장재 난연 등급·인증자료 확인?",
+      "fields": [
+        "primary_use",
+        "total_floor_area_m2",
+        "above_ground_floors",
+        "underground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "층별 평면도",
+        "피난동선도",
+        "단면도",
+        "방화구획도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D060",
+      "parent_id": "C10",
+      "level": "세부항목",
+      "group": "피난·방화",
+      "title": "외벽 마감재료 및 단열재",
+      "basis": "「건축법」 제49조·제50조·제50조의2·제51조·제52조, 「건축물의 피난ㆍ방화구조 등의 기준에 관한 규칙」",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "외벽 마감재료·복합자재·단열재의 적용기준 확인?",
+      "fields": [
+        "primary_use",
+        "total_floor_area_m2",
+        "above_ground_floors",
+        "underground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "층별 평면도",
+        "피난동선도",
+        "단면도",
+        "방화구획도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D061",
+      "parent_id": "C10",
+      "level": "세부항목",
+      "group": "피난·방화",
+      "title": "피난안전구역·대피공간",
+      "basis": "「건축법」 제49조·제50조·제50조의2·제51조·제52조, 「건축물의 피난ㆍ방화구조 등의 기준에 관한 규칙」",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "고층·공동주택 등 피난안전구역·대피공간 해당 여부 확인?",
+      "fields": [
+        "primary_use",
+        "total_floor_area_m2",
+        "above_ground_floors",
+        "underground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "층별 평면도",
+        "피난동선도",
+        "단면도",
+        "방화구획도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D062",
+      "parent_id": "C10",
+      "level": "세부항목",
+      "group": "피난·방화",
+      "title": "소방시설 협의·동의",
+      "basis": "「건축법」 제49조·제50조·제50조의2·제51조·제52조, 「건축물의 피난ㆍ방화구조 등의 기준에 관한 규칙」",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "소방시설법 등 별도 동의·신고·시설계획 협의 필요성 검토?",
+      "fields": [
+        "primary_use",
+        "total_floor_area_m2",
+        "above_ground_floors",
+        "underground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "층별 평면도",
+        "피난동선도",
+        "단면도",
+        "방화구획도"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D063",
+      "parent_id": "C14",
+      "level": "세부항목",
+      "group": "설비·에너지·위생",
+      "title": "급수·급탕·오수처리",
+      "basis": "「건축법」 제62조·제64조, 「녹색건축물 조성 지원법」 등 관계법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "상수도·급수·오수처리·공공하수도 연결 등 관련 부서 검토사항 확인?",
+      "fields": [
+        "primary_use",
+        "total_floor_area_m2",
+        "above_ground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "설비도",
+        "에너지절약계획서",
+        "급배수계획",
+        "환기계획"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D064",
+      "parent_id": "C14",
+      "level": "세부항목",
+      "group": "설비·에너지·위생",
+      "title": "환기·채광·위생시설",
+      "basis": "「건축법」 제62조·제64조, 「녹색건축물 조성 지원법」 등 관계법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "거실·화장실·지하층의 환기·채광 및 위생 기준 확인?",
+      "fields": [
+        "primary_use",
+        "total_floor_area_m2",
+        "above_ground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "설비도",
+        "에너지절약계획서",
+        "급배수계획",
+        "환기계획"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D065",
+      "parent_id": "C14",
+      "level": "세부항목",
+      "group": "설비·에너지·위생",
+      "title": "승강기 설치 기준",
+      "basis": "「건축법」 제62조·제64조, 「녹색건축물 조성 지원법」 등 관계법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "층수·용도·규모별 승용·비상용 승강기 설치 대상 확인?",
+      "fields": [
+        "primary_use",
+        "total_floor_area_m2",
+        "above_ground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "설비도",
+        "에너지절약계획서",
+        "급배수계획",
+        "환기계획"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D066",
+      "parent_id": "C14",
+      "level": "세부항목",
+      "group": "설비·에너지·위생",
+      "title": "배연·제연·방재 설비",
+      "basis": "「건축법」 제62조·제64조, 「녹색건축물 조성 지원법」 등 관계법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "대상 용도·규모에서 배연·제연 관련 설비기준 확인?",
+      "fields": [
+        "primary_use",
+        "total_floor_area_m2",
+        "above_ground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "설비도",
+        "에너지절약계획서",
+        "급배수계획",
+        "환기계획"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D067",
+      "parent_id": "C14",
+      "level": "세부항목",
+      "group": "설비·에너지·위생",
+      "title": "에너지절약계획서",
+      "basis": "「건축법」 제62조·제64조, 「녹색건축물 조성 지원법」 등 관계법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "대상 규모·용도별 제출 의무 및 관련 설계도서 확인?",
+      "fields": [
+        "primary_use",
+        "total_floor_area_m2",
+        "above_ground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "설비도",
+        "에너지절약계획서",
+        "급배수계획",
+        "환기계획"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D068",
+      "parent_id": "C14",
+      "level": "세부항목",
+      "group": "설비·에너지·위생",
+      "title": "건축물 에너지효율·녹색인증",
+      "basis": "「건축법」 제62조·제64조, 「녹색건축물 조성 지원법」 등 관계법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "해당 법률·지침의 인증 또는 평가 적용 여부 확인?",
+      "fields": [
+        "primary_use",
+        "total_floor_area_m2",
+        "above_ground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "설비도",
+        "에너지절약계획서",
+        "급배수계획",
+        "환기계획"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D069",
+      "parent_id": "C14",
+      "level": "세부항목",
+      "group": "설비·에너지·위생",
+      "title": "기계·전기실·설비공간",
+      "basis": "「건축법」 제62조·제64조, 「녹색건축물 조성 지원법」 등 관계법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "설비공간·샤프트와 건축면적·피난·방화의 상충 여부 확인?",
+      "fields": [
+        "primary_use",
+        "total_floor_area_m2",
+        "above_ground_floors"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "설비도",
+        "에너지절약계획서",
+        "급배수계획",
+        "환기계획"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D070",
+      "parent_id": "C11",
+      "level": "세부항목",
+      "group": "주차·접근성",
+      "title": "용도별 부설주차장 설치기준",
+      "basis": "「주차장법」 제19조, 「주차장법 시행령」 제6조, 「주차장법 시행규칙」 및 파주시 주차장 설치 및 관리 조례",
+      "url": "https://www.law.go.kr/법령/주차장법",
+      "question": "용도와 면적에 따른 주차대수 기준 및 시행일 적용 여부를 확인?",
+      "fields": [
+        "primary_use",
+        "parking_spaces",
+        "total_floor_area_m2",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "용도별 주차대수 산출서",
+        "주차장 배치도",
+        "차량 진출입 도면"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D071",
+      "parent_id": "C11",
+      "level": "세부항목",
+      "group": "주차·접근성",
+      "title": "증축 시 추가 주차대수",
+      "basis": "「주차장법」 제19조, 「주차장법 시행령」 제6조, 「주차장법 시행규칙」 및 파주시 주차장 설치 및 관리 조례",
+      "url": "https://www.law.go.kr/법령/주차장법",
+      "question": "기존 주차시설·증축부분·시설물 특례별 산정방법을 확인?",
+      "fields": [
+        "primary_use",
+        "parking_spaces",
+        "total_floor_area_m2",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "용도별 주차대수 산출서",
+        "주차장 배치도",
+        "차량 진출입 도면"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D072",
+      "parent_id": "C11",
+      "level": "세부항목",
+      "group": "주차·접근성",
+      "title": "용도변경 시 추가 주차대수",
+      "basis": "「주차장법」 제19조, 「주차장법 시행령」 제6조, 「주차장법 시행규칙」 및 파주시 주차장 설치 및 관리 조례",
+      "url": "https://www.law.go.kr/법령/주차장법",
+      "question": "용도변경 전후 현행 산정 기준과 예외요건 확인?",
+      "fields": [
+        "primary_use",
+        "parking_spaces",
+        "total_floor_area_m2",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "용도별 주차대수 산출서",
+        "주차장 배치도",
+        "차량 진출입 도면"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D073",
+      "parent_id": "C11",
+      "level": "세부항목",
+      "group": "주차·접근성",
+      "title": "주차구획 규격·동선",
+      "basis": "「주차장법」 제19조, 「주차장법 시행령」 제6조, 「주차장법 시행규칙」 및 파주시 주차장 설치 및 관리 조례",
+      "url": "https://www.law.go.kr/법령/주차장법",
+      "question": "주차면 크기·차로폭·회전 반경·출입구 구조 확인?",
+      "fields": [
+        "primary_use",
+        "parking_spaces",
+        "total_floor_area_m2",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "용도별 주차대수 산출서",
+        "주차장 배치도",
+        "차량 진출입 도면"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D074",
+      "parent_id": "C11",
+      "level": "세부항목",
+      "group": "주차·접근성",
+      "title": "장애인 전용주차장",
+      "basis": "「주차장법」 제19조, 「주차장법 시행령」 제6조, 「주차장법 시행규칙」 및 파주시 주차장 설치 및 관리 조례",
+      "url": "https://www.law.go.kr/법령/주차장법",
+      "question": "시설별 장애인전용구역 설치 의무 및 위치·규격 확인?",
+      "fields": [
+        "primary_use",
+        "parking_spaces",
+        "total_floor_area_m2",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "용도별 주차대수 산출서",
+        "주차장 배치도",
+        "차량 진출입 도면"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D075",
+      "parent_id": "C11",
+      "level": "세부항목",
+      "group": "주차·접근성",
+      "title": "교통약자 편의시설",
+      "basis": "「주차장법」 제19조, 「주차장법 시행령」 제6조, 「주차장법 시행규칙」 및 파주시 주차장 설치 및 관리 조례",
+      "url": "https://www.law.go.kr/법령/주차장법",
+      "question": "장애인등편의법 등 편의시설 설치 및 접근 가능한 동선 대상 확인?",
+      "fields": [
+        "primary_use",
+        "parking_spaces",
+        "total_floor_area_m2",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "용도별 주차대수 산출서",
+        "주차장 배치도",
+        "차량 진출입 도면"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D076",
+      "parent_id": "C11",
+      "level": "세부항목",
+      "group": "주차·접근성",
+      "title": "기계식 주차장·구조적 제약",
+      "basis": "「주차장법」 제19조, 「주차장법 시행령」 제6조, 「주차장법 시행규칙」 및 파주시 주차장 설치 및 관리 조례",
+      "url": "https://www.law.go.kr/법령/주차장법",
+      "question": "기계식 주차장 인정 기준, 옥외 주차장과 구조적 안전 대상 확인?",
+      "fields": [
+        "primary_use",
+        "parking_spaces",
+        "total_floor_area_m2",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "용도별 주차대수 산출서",
+        "주차장 배치도",
+        "차량 진출입 도면"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D077",
+      "parent_id": "C12",
+      "level": "세부항목",
+      "group": "관계법령·의제",
+      "title": "개발행위허가 협의·의제",
+      "basis": "「건축법」 제11조제5항·제14조 및 「국토의 계획 및 이용에 관한 법률」 등 인허가 관계법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "토지 형질변경·공작물 설치 등 국토계획법상 행위허가 필요 여부 확인?",
+      "fields": [
+        "site_address",
+        "zoning",
+        "primary_use",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지이용계획",
+        "관계부서 협의도서",
+        "허가의제 검토표"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D078",
+      "parent_id": "C12",
+      "level": "세부항목",
+      "group": "관계법령·의제",
+      "title": "농지전용 협의·의제",
+      "basis": "「건축법」 제11조제5항·제14조 및 「국토의 계획 및 이용에 관한 법률」 등 인허가 관계법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "농지 여부, 농지전용 허가·협의·부담금 등 확인?",
+      "fields": [
+        "site_address",
+        "zoning",
+        "primary_use",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지이용계획",
+        "관계부서 협의도서",
+        "허가의제 검토표"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D079",
+      "parent_id": "C12",
+      "level": "세부항목",
+      "group": "관계법령·의제",
+      "title": "산지전용 협의·의제",
+      "basis": "「건축법」 제11조제5항·제14조 및 「국토의 계획 및 이용에 관한 법률」 등 인허가 관계법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "산지 여부, 산지전용·일시사용 관련 절차 확인?",
+      "fields": [
+        "site_address",
+        "zoning",
+        "primary_use",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지이용계획",
+        "관계부서 협의도서",
+        "허가의제 검토표"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D080",
+      "parent_id": "C12",
+      "level": "세부항목",
+      "group": "관계법령·의제",
+      "title": "도로점용·도로연결",
+      "basis": "「건축법」 제11조제5항·제14조 및 「국토의 계획 및 이용에 관한 법률」 등 인허가 관계법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "도로법 등 도로점용·도로연결 허가 필요 여부 확인?",
+      "fields": [
+        "site_address",
+        "zoning",
+        "primary_use",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지이용계획",
+        "관계부서 협의도서",
+        "허가의제 검토표"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D081",
+      "parent_id": "C12",
+      "level": "세부항목",
+      "group": "관계법령·의제",
+      "title": "하수도·개인하수처리",
+      "basis": "「건축법」 제11조제5항·제14조 및 「국토의 계획 및 이용에 관한 법률」 등 인허가 관계법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "오수·정화조·하수도법 관련 협의요건 확인?",
+      "fields": [
+        "site_address",
+        "zoning",
+        "primary_use",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지이용계획",
+        "관계부서 협의도서",
+        "허가의제 검토표"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D082",
+      "parent_id": "C12",
+      "level": "세부항목",
+      "group": "관계법령·의제",
+      "title": "소방 관련 동의·협의",
+      "basis": "「건축법」 제11조제5항·제14조 및 「국토의 계획 및 이용에 관한 법률」 등 인허가 관계법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "건축동의 또는 소방시설 등 관계기관 절차 필요 여부 확인?",
+      "fields": [
+        "site_address",
+        "zoning",
+        "primary_use",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지이용계획",
+        "관계부서 협의도서",
+        "허가의제 검토표"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D083",
+      "parent_id": "C12",
+      "level": "세부항목",
+      "group": "관계법령·의제",
+      "title": "문화유산·매장유산 검토",
+      "basis": "「건축법」 제11조제5항·제14조 및 「국토의 계획 및 이용에 관한 법률」 등 인허가 관계법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "문화유산 보호구역 및 매장유산 관련 협의 필요 여부 확인?",
+      "fields": [
+        "site_address",
+        "zoning",
+        "primary_use",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지이용계획",
+        "관계부서 협의도서",
+        "허가의제 검토표"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D084",
+      "parent_id": "C12",
+      "level": "세부항목",
+      "group": "관계법령·의제",
+      "title": "환경·배출시설 협의",
+      "basis": "「건축법」 제11조제5항·제14조 및 「국토의 계획 및 이용에 관한 법률」 등 인허가 관계법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "대기·수질·소음·가축분뇨 배출시설 여부에 따른 관련 허가 필요성 확인?",
+      "fields": [
+        "site_address",
+        "zoning",
+        "primary_use",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지이용계획",
+        "관계부서 협의도서",
+        "허가의제 검토표"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D085",
+      "parent_id": "C12",
+      "level": "세부항목",
+      "group": "관계법령·의제",
+      "title": "군사시설·접경지역 제한",
+      "basis": "「건축법」 제11조제5항·제14조 및 「국토의 계획 및 이용에 관한 법률」 등 인허가 관계법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "군사시설 보호구역 등 관계기관 협의 대상 여부 확인?",
+      "fields": [
+        "site_address",
+        "zoning",
+        "primary_use",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지이용계획",
+        "관계부서 협의도서",
+        "허가의제 검토표"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D086",
+      "parent_id": "C12",
+      "level": "세부항목",
+      "group": "관계법령·의제",
+      "title": "그 밖의 소관기관 협의",
+      "basis": "「건축법」 제11조제5항·제14조 및 「국토의 계획 및 이용에 관한 법률」 등 인허가 관계법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "상수·하천·공원·학교·철도·전력 등 입지별 소관 부서 확인?",
+      "fields": [
+        "site_address",
+        "zoning",
+        "primary_use",
+        "work_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "토지이용계획",
+        "관계부서 협의도서",
+        "허가의제 검토표"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D087",
+      "parent_id": "C13",
+      "level": "세부항목",
+      "group": "기존건축물·변경",
+      "title": "기존 건축물 대장·허가이력",
+      "basis": "「건축법」 제11조·제14조·제16조·제19조·제22조 및 관련 하위법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "기존 건축물 허가·신고·사용승인·대장 및 현황의 일치 여부 확인?",
+      "fields": [
+        "work_type",
+        "total_floor_area_m2",
+        "building_area_m2"
+      ],
+      "condition": "alteration",
+      "required_docs": [
+        "건축물대장",
+        "기존 도면",
+        "사용승인",
+        "위반건축물 조회자료"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D088",
+      "parent_id": "C13",
+      "level": "세부항목",
+      "group": "기존건축물·변경",
+      "title": "위반건축물 여부",
+      "basis": "「건축법」 제11조·제14조·제16조·제19조·제22조 및 관련 하위법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "기존 위반사항·이행강제금·시정명령 관련 행정정보를 적법한 절차로 확인?",
+      "fields": [
+        "work_type",
+        "total_floor_area_m2",
+        "building_area_m2"
+      ],
+      "condition": "alteration",
+      "required_docs": [
+        "건축물대장",
+        "기존 도면",
+        "사용승인",
+        "위반건축물 조회자료"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D089",
+      "parent_id": "C13",
+      "level": "세부항목",
+      "group": "기존건축물·변경",
+      "title": "증축 전·후 면적 구분",
+      "basis": "「건축법」 제11조·제14조·제16조·제19조·제22조 및 관련 하위법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "기존·신청·증가·총 연면적 구분과 층별 합계 대조?",
+      "fields": [
+        "work_type",
+        "total_floor_area_m2",
+        "building_area_m2"
+      ],
+      "condition": "alteration",
+      "required_docs": [
+        "건축물대장",
+        "기존 도면",
+        "사용승인",
+        "위반건축물 조회자료"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D090",
+      "parent_id": "C13",
+      "level": "세부항목",
+      "group": "기존건축물·변경",
+      "title": "기존·신규 주차대수 구분",
+      "basis": "「건축법」 제11조·제14조·제16조·제19조·제22조 및 관련 하위법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "기존 확보 주차대수 및 증축으로 발생한 추가 대수 검토?",
+      "fields": [
+        "work_type",
+        "total_floor_area_m2",
+        "building_area_m2"
+      ],
+      "condition": "alteration",
+      "required_docs": [
+        "건축물대장",
+        "기존 도면",
+        "사용승인",
+        "위반건축물 조회자료"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D091",
+      "parent_id": "C13",
+      "level": "세부항목",
+      "group": "기존건축물·변경",
+      "title": "구조안전·피난의 기존건물 연계",
+      "basis": "「건축법」 제11조·제14조·제16조·제19조·제22조 및 관련 하위법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "기존 구조와 추가 부분 접합 및 피난·방화 적용범위 확인?",
+      "fields": [
+        "work_type",
+        "total_floor_area_m2",
+        "building_area_m2"
+      ],
+      "condition": "alteration",
+      "required_docs": [
+        "건축물대장",
+        "기존 도면",
+        "사용승인",
+        "위반건축물 조회자료"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D092",
+      "parent_id": "C13",
+      "level": "세부항목",
+      "group": "기존건축물·변경",
+      "title": "종전 건축법·조례 부칙 및 특례",
+      "basis": "「건축법」 제11조·제14조·제16조·제19조·제22조 및 관련 하위법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "기존 건축물 특례, 경과조치 및 증축 당시 적용법령 확인?",
+      "fields": [
+        "work_type",
+        "total_floor_area_m2",
+        "building_area_m2"
+      ],
+      "condition": "alteration",
+      "required_docs": [
+        "건축물대장",
+        "기존 도면",
+        "사용승인",
+        "위반건축물 조회자료"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D093",
+      "parent_id": "C13",
+      "level": "세부항목",
+      "group": "기존건축물·변경",
+      "title": "공사 중 설계변경·보완 처리",
+      "basis": "「건축법」 제11조·제14조·제16조·제19조·제22조 및 관련 하위법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "공사 착수 및 변경 내용의 절차적 적합성·보완이력 확인?",
+      "fields": [
+        "work_type",
+        "total_floor_area_m2",
+        "building_area_m2"
+      ],
+      "condition": "alteration",
+      "required_docs": [
+        "건축물대장",
+        "기존 도면",
+        "사용승인",
+        "위반건축물 조회자료"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D094",
+      "parent_id": "C14",
+      "level": "세부항목",
+      "group": "기록·품질·민원",
+      "title": "법령 적용 기준일 확정",
+      "basis": "「건축법」 등 관계법령 및 「행정절차법」 관련 절차규정",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "접수일·처리일 등 법률상 기준일과 해당 시행법령 버전 확인?",
+      "fields": [
+        "site_address",
+        "notes",
+        "permit_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "검토조서",
+        "법령 원문",
+        "대장",
+        "담당자 확인 기록"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D095",
+      "parent_id": "C14",
+      "level": "세부항목",
+      "group": "기록·품질·민원",
+      "title": "조례·부칙·경과조치 확인",
+      "basis": "「건축법」 등 관계법령 및 「행정절차법」 관련 절차규정",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "파주시 조례 별표·부칙·유예기간과 개정 시행일 확인?",
+      "fields": [
+        "site_address",
+        "notes",
+        "permit_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "검토조서",
+        "법령 원문",
+        "대장",
+        "담당자 확인 기록"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D096",
+      "parent_id": "C14",
+      "level": "세부항목",
+      "group": "기록·품질·민원",
+      "title": "도면·산출서 상호 일치",
+      "basis": "「건축법」 등 관계법령 및 「행정절차법」 관련 절차규정",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "배치도·평면도·입면도·면적표·신청서의 일치 여부 확인?",
+      "fields": [
+        "site_address",
+        "notes",
+        "permit_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "검토조서",
+        "법령 원문",
+        "대장",
+        "담당자 확인 기록"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D097",
+      "parent_id": "C14",
+      "level": "세부항목",
+      "group": "기록·품질·민원",
+      "title": "보완사항·협의사항 구분",
+      "basis": "「건축법」 등 관계법령 및 「행정절차법」 관련 절차규정",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "민원인 보완요구와 내부 관계부서 협의 사항을 분리 기록?",
+      "fields": [
+        "site_address",
+        "notes",
+        "permit_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "검토조서",
+        "법령 원문",
+        "대장",
+        "담당자 확인 기록"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D098",
+      "parent_id": "C14",
+      "level": "세부항목",
+      "group": "기록·품질·민원",
+      "title": "검토근거·예외사유 기록",
+      "basis": "「건축법」 등 관계법령 및 「행정절차법」 관련 절차규정",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "법령 원문 링크와 특례·비적용 판단의 근거를 검토의견에 남김?",
+      "fields": [
+        "site_address",
+        "notes",
+        "permit_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "검토조서",
+        "법령 원문",
+        "대장",
+        "담당자 확인 기록"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    },
+    {
+      "id": "D099",
+      "parent_id": "C14",
+      "level": "세부항목",
+      "group": "기록·품질·민원",
+      "title": "최종 담당자 책임 확인",
+      "basis": "「건축법」 등 관계법령 및 「행정절차법」 관련 절차규정",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "AI 추천·초안과 담당자의 검토·확정·결재권한을 분리?",
+      "fields": [
+        "site_address",
+        "notes",
+        "permit_type"
+      ],
+      "condition": "all",
+      "required_docs": [
+        "검토조서",
+        "법령 원문",
+        "대장",
+        "담당자 확인 기록"
+      ],
+      "reference_status": "조문·시행일·현행 조례 별표 확인 필요",
+      "review_scope": "검토 후보 제시, 법적 적합성·의무 여부 자동 판정 금지"
+    }
+  ],
+  "master_description": "대표항목 14개 + 세부항목 99개. 토지·도로·용도·설비·주차·인허가의제 등 조건별 검토 후보 목록. 모든 근거는 현행 법령·조례 대조가 필요한 초안입니다.",
+  "categories": [
+    {
+      "name": "신청절차",
+      "parent_id": "C01",
+      "count": 8
+    },
+    {
+      "name": "대지·경계",
+      "parent_id": "C03",
+      "count": 8
+    },
+    {
+      "name": "도로·접도",
+      "parent_id": "C02",
+      "count": 8
+    },
+    {
+      "name": "용도·입지·도시계획",
+      "parent_id": "C05",
+      "count": 9
+    },
+    {
+      "name": "면적·높이·규모",
+      "parent_id": "C06",
+      "count": 10
+    },
+    {
+      "name": "구조·안전",
+      "parent_id": "C09",
+      "count": 7
+    },
+    {
+      "name": "피난·방화",
+      "parent_id": "C10",
+      "count": 12
+    },
+    {
+      "name": "설비·에너지·위생",
+      "parent_id": "C14",
+      "count": 7
+    },
+    {
+      "name": "주차·접근성",
+      "parent_id": "C11",
+      "count": 7
+    },
+    {
+      "name": "관계법령·의제",
+      "parent_id": "C12",
+      "count": 10
+    },
+    {
+      "name": "기존건축물·변경",
+      "parent_id": "C13",
+      "count": 7
+    },
+    {
+      "name": "기록·품질·민원",
+      "parent_id": "C14",
+      "count": 6
+    }
+  ],
+  "reviewed_sources": [
+    {
+      "name": "건축법",
+      "url": "https://www.law.go.kr/법령/건축법"
+    },
+    {
+      "name": "건축법 시행령",
+      "url": "https://www.law.go.kr/법령/건축법시행령"
+    },
+    {
+      "name": "파주시 건축 조례",
+      "url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinId=2156831",
+      "note": "검색결과 시행 2025-03-20; 현행 연혁 재확인"
+    },
+    {
+      "name": "파주시 도시계획 조례",
+      "url": "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2022815",
+      "note": "검색결과 시행 2025-03-20; 현행 연혁 재확인"
+    },
+    {
+      "name": "파주시 주차장 설치 및 관리 조례",
+      "url": "https://law.go.kr/LSW/ordinInfoP.do?ordinSeq=2073597",
+      "note": "2025-09-30 시행본 확인. 2027-01-01 시행 개정본과 구분"
+    },
+    {
+      "name": "주차장법 시행령",
+      "url": "https://www.law.go.kr/법령/주차장법시행령",
+      "note": "2026-08-28 시행 개정 확인"
     }
   ]
 }
