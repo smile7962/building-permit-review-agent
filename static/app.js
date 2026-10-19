@@ -9,6 +9,8 @@ let selectedDoc = null;
 let lastRequest = 0;
 let activeStep = 1;
 let legalMaster = null;
+let designFields=[];
+let renderedEvidenceKey = null;
 const legalOpenGroups = new Set(["대표 검토", "신청절차"]);
 
 async function api(path, {method='GET', json, raw}={}) {
@@ -417,6 +419,9 @@ function matchesLegal(item){
   const group=$('legalGroupFilter').value,stage=$('legalReviewFilter').value;
   const term=$('legalSearch').value.trim().toLocaleLowerCase('ko');
   if(group!=='전체' && legalGroup(item)!==group)return false;
+  if(stage==='사건별' && item.screening?.status!=='검토대상' && item.progress==='미착수')return false;
+  if(stage==='자료필요' && item.screening?.status!=='자료필요')return false;
+  if(stage==='낮음' && item.screening?.status!=='우선낮음')return false;
   if(stage==='우선' && item.priority!=='우선 확인')return false;
   if(stage==='미검토' && item.progress==='검토기록완료')return false;
   if(stage==='완료' && item.progress!=='검토기록완료')return false;
@@ -426,9 +431,10 @@ function matchesLegal(item){
 }
 function renderLegal(){
   if(!legalMaster || !current)return;
+  renderDesignEvidence();
   const state=current.legal_review,container=$('legalItems');container.replaceChildren();
   const confirmEl=$('legalConfirmButton');
-  const needsRefresh=Boolean(state?.outdated || (state && !current.confirmed_at));
+  const needsRefresh=Boolean(state?.outdated || state?.screening_needs_refresh || (state && !current.confirmed_at));
   $('legalVersion').textContent=`임시 검토 마스터: ${legalMaster.version} · 기준일 ${legalMaster.as_of} · ${legalMaster.items.length}개 후보`;
   $('legalStatus').textContent=state?.confirmed_at&&!needsRefresh?'담당자 검토기록 확정':state?'확인·기록 필요':'검토 전';
   $('legalStatus').classList.toggle('confirmed',Boolean(state?.confirmed_at&&!needsRefresh));
@@ -437,20 +443,21 @@ function renderLegal(){
   if(!current.confirmed_at)message='STEP 01 건축개요를 먼저 확정하세요.';
   else if(needsRefresh)message='건축개요·원문 또는 검토마스터가 변경됐습니다. 기존 이력은 사건파일에 보존됩니다. 재생성 전 저장한 검토의견을 확인하세요.';
   else if(!state)message='확정된 신청정보를 바탕으로 검토 후보를 생성하세요.';
-  else message='추천 순위는 확인할 차례를 정한 것뿐입니다. 적용·비적용, 적법·위법을 자동 판정하지 않습니다.';
+  else message='사건별 검토 후보만 우선 표시합니다. 판별 자료가 부족한 항목은 ‘추가자료 필요’ 탭에서 확인하세요. 이 결과는 적법·위법 판정이 아닙니다.';
   $('legalWarning').textContent=message;
   if(!state){$('legalProgress').textContent=`대표 14개 + 세부 ${legalMaster.items.length-14}개 후보 · 사건별 검토 전`;confirmEl.disabled=true;$('legalFilterInfo').textContent='먼저 체크리스트를 생성하세요.';return;}
   const completed=state.items.filter(i=>i.progress==='검토기록완료').length;
-  $('legalProgress').textContent=`전체 ${state.items.length}개 (대표 ${state.items.filter(i=>i.level!=='세부항목').length}개 · 세부 ${state.items.filter(i=>i.level==='세부항목').length}개) · 담당자 검토기록 완료 ${completed}개 · 우선 확인 ${state.items.filter(i=>i.priority==='우선 확인').length}개`;
+  const sc=state.screening_summary||{};
+  $('legalProgress').textContent=`사건별 검토 대상 ${sc['검토대상']||0}개 · 확인자료 필요 ${sc['자료필요']||0}개 · 현 단계 우선낮음 ${sc['우선낮음']||0}개 · 담당자 기록완료 ${completed}개`; 
   confirmEl.disabled=needsRefresh || !current.confirmed_at || state.items.some(i=>i.progress!=='검토기록완료' || i.applicability==='미확인' || !i.note.trim());
   const selected=state.items.filter(matchesLegal);
-  $('legalFilterInfo').textContent=`현재 필터 표시 ${selected.length}개 / 전체 ${state.items.length}개 · 표시되지 않은 항목도 기록과 확정에 포함됩니다.`;
+  $('legalFilterInfo').textContent=`현재 표시 ${selected.length}개 · 총 ${state.items.length}개 중 조건에 따라 선별. ‘자료필요’ 항목을 자동 비적용 처리하지 않습니다.`;
   const grouped=new Map();
   for(const item of selected){const group=legalGroup(item);if(!grouped.has(group))grouped.set(group,[]);grouped.get(group).push(item);}
   const labels=Object.fromEntries(definitions.map(d=>[d.key,d.label]));
   const autoOpen=!!$('legalSearch').value.trim() || $('legalGroupFilter').value!=='전체' || $('legalReviewFilter').value!=='전체';
   for(const [group,items] of grouped){
-    const section=create('details','legal-group');section.open=autoOpen||legalOpenGroups.has(group);
+    const section=create('details','legal-group');section.open=autoOpen||legalOpenGroups.has(group)||$('legalReviewFilter').value==='사건별';
     const title=create('summary','legal-group-title',`${group} · ${items.length}개 표시 · 검토기록 완료 ${items.filter(x=>x.progress==='검토기록완료').length}`);
     section.append(title);section.addEventListener('toggle',()=>{if(section.open)legalOpenGroups.add(group);else legalOpenGroups.delete(group);});
     const stack=create('div','legal-group-items');
@@ -458,10 +465,14 @@ function renderLegal(){
       const block=create('article','legal-item');
       const title=create('div','legal-item-head');
       const h=create('div');h.append(create('strong','',`${item.id} · ${item.title}`));
-      h.append(create('small','',`${item.level||'대표항목'} · ${item.priority}`));title.append(h);
+      h.append(create('small','',`${item.screening?.status||'자료필요'} · ${item.priority}`));title.append(h);
       const link=create('a','textlink','근거법령 원문 ↗');link.href=item.url;link.target='_blank';link.rel='noopener noreferrer';title.append(link);block.append(title);
       block.append(create('p','legal-basis',item.basis));
       block.append(create('p','legal-question',item.question));
+      const screen=item.screening||{};
+      block.append(create('p','legal-screen-reason','선별 근거: '+(screen.reason||'추가자료 확인 필요')));
+      if(screen.missing_inputs?.length)block.append(create('p','legal-missing','필요 자료: '+screen.missing_inputs.join(' · ')));
+      if(screen.check)block.append(create('p','legal-check','설계값·기준 비교: '+screen.check.result));
       if(item.required_docs?.length){block.append(create('p','legal-docs','확인자료: '+item.required_docs.join(' · ')));}
       if(item.reference_status){block.append(create('p','legal-reference','법령 검증 상태: '+item.reference_status));}
       const facts=create('div','legal-facts');
@@ -490,13 +501,48 @@ function renderLegal(){
     section.append(stack);container.append(section);
   }
 }
+function renderDesignEvidence(){
+  const container=$('designEvidenceFields');if(!container)return;
+  const ev=current?.legal_review?.design_evidence||{};
+  const signature=(current?.case_id||'')+JSON.stringify(ev)+Boolean(current?.legal_review);
+  if(renderedEvidenceKey===signature && container.childElementCount===designFields.length){
+    $('designEvidenceSave').disabled=!current?.legal_review||Boolean(current?.legal_review?.outdated)||!current?.confirmed_at;
+    return;
+  }
+  renderedEvidenceKey=signature;
+  container.replaceChildren();
+  for(const spec of designFields){
+    const outer=create('label','design-evidence-field');
+    outer.append(create('span','',spec.label));
+    let field;
+    if(spec.kind==='select'){
+      field=create('select','legal-input');
+      for(const name of spec.options||[]){const op=create('option','',name||'선택하세요');op.value=name;field.append(op);}
+    }else{
+      field=create('input','legal-input');field.type=spec.kind==='number'?'number':'text';
+      if(spec.kind==='number'){field.step='any';field.min='0';}
+    }
+    field.id='design_'+spec.key;field.value=ev[spec.key]||'';
+    outer.append(field,create('small','',spec.hint||''));container.append(outer);
+  }
+  $('designEvidenceSave').disabled=!current?.legal_review||Boolean(current?.legal_review?.outdated)||!current?.confirmed_at;
+}
+async function saveDesignEvidence(){
+  const values={};for(const spec of designFields)values[spec.key]=$('design_'+spec.key)?.value||'';
+  const btn=$('designEvidenceSave');btn.disabled=true;
+  try{
+    const response=await api('/api/design-evidence',{method:'POST',json:{values}});
+    current=response.case;renderLegal();updateSummary();
+    notify('설계도서 값 저장 및 사건별 검토항목 재선별 완료. 기존 확정 검토기록은 다시 확인해야 합니다.');
+  }catch(e){notify(e.message,true);btn.disabled=false;}
+}
 async function buildLegal(){
   if(!current?.confirmed_at){notify('STEP 01 건축개요 검토확정 후 사용하세요.',true);return;}
   if(current.legal_review&&!confirm('기존 항목별 검토의견이 초기화됩니다. 계속할까요?'))return;
   try{
     await persist();
     const d=await api('/api/legal-build',{method:'POST',json:{init:true}});
-    current=d.case;renderLegal();updateSummary();notify('검토항목 후보 14개 생성');
+    current=d.case;renderLegal();updateSummary();notify('신청정보별 조건 분석 완료');
   }catch(e){notify(e.message,true);}
 }
 async function confirmLegal(){
@@ -586,6 +632,7 @@ function setup(){
   $('exportButton').addEventListener('click',exportCase);
   $('confirmButton').addEventListener('click',confirmFields);
   $('legalBuildButton').addEventListener('click',buildLegal);
+  $('designEvidenceSave').addEventListener('click',saveDesignEvidence);
   $('legalGroupFilter').addEventListener('change',renderLegal);
   $('legalReviewFilter').addEventListener('change',renderLegal);
   $('legalSearch').addEventListener('input',renderLegal);
@@ -616,7 +663,7 @@ function setup(){
 async function init(){
   setup();
   try{
-    const data=await api('/api/state');current=data.case;definitions=data.fields;legalMaster=data.legal_master;refreshLegalGroups();
+    const data=await api('/api/state');current=data.case;definitions=data.fields;legalMaster=data.legal_master;designFields=data.design_fields||[];refreshLegalGroups();
     aiEnabled=Boolean(data.ai_available);demoSha256=data.demo_sha256||'';
     $('benchAiButton').disabled=!aiEnabled;
     $('practicalAiButton').disabled=!aiEnabled;

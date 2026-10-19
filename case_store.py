@@ -10,7 +10,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 SCHEMA_VERSION = 1
-from legal_review import build as build_legal, snapshot as legal_hash, MASTER as LEGAL_MASTER, validate_edit as validate_legal_edit
+from legal_review import build as build_legal, snapshot as legal_hash, MASTER as LEGAL_MASTER, validate_edit as validate_legal_edit, refresh_screen
+from screening import evidence_values, SCREEN_VERSION, screen_item, summarize_screen
 APPLICATION_ID = 0x42434153  # BCAS: distinguish our SQLite file
 
 
@@ -142,6 +143,8 @@ class CaseStore:
                 legal['outdated'] = (legal['values_sha256'] != legal_hash(json.loads(row['values_json']))
                     or legal['master_version'] != LEGAL_MASTER['version']
                     or legal.get('document_sha256') != latest_doc_sha)
+                refresh_screen(legal, json.loads(row['values_json']))
+                legal['screening_needs_refresh'] = legal.get('screening_version') != SCREEN_VERSION
             ai_row = con.execute("SELECT payload_json FROM records WHERE category='ai_review' ORDER BY id DESC LIMIT 1").fetchone()
             ai = json.loads(ai_row[0]) if ai_row else None
             if not documents or (ai and ai.get('document_id') != documents[0]['id']):
@@ -332,7 +335,9 @@ class CaseStore:
             data=con.execute('SELECT values_json,confirmed_at FROM case_data WHERE id=1').fetchone()
             if not data['confirmed_at']:
                 raise ValueError('STEP 01 건축개요를 담당자가 먼저 검토 확정하세요.')
-            payload=build_legal(json.loads(data['values_json']))
+            last=con.execute("SELECT payload_json FROM records WHERE category='legal_checklist' ORDER BY id DESC LIMIT 1").fetchone()
+            prior=json.loads(last['payload_json']).get('design_evidence',{}) if last else {}
+            payload=build_legal(json.loads(data['values_json']),prior)
             newest_doc=con.execute('SELECT sha256 FROM documents ORDER BY id DESC LIMIT 1').fetchone()
             payload['document_sha256']=newest_doc['sha256'] if newest_doc else None
             t=now()
@@ -340,6 +345,36 @@ class CaseStore:
                         (json.dumps(payload,ensure_ascii=False),t))
             con.execute("INSERT INTO history(happened_at,action,detail) VALUES (?,?,?)",
                         (t,'legal_build','건축법 검토항목 후보 생성 · 담당자 판단 미실시'))
+        return self.state()
+
+    def update_design_evidence(self, data):
+        """Save verified design drawing measurements; never invent a statutory cutoff."""
+        ev=evidence_values(data)
+        with self.lock,self._connect() as con:
+            row=con.execute("SELECT id,payload_json FROM records WHERE category='legal_checklist' ORDER BY id DESC LIMIT 1").fetchone()
+            if not row:raise ValueError('먼저 사건별 법령 검토를 생성하세요.')
+            review=json.loads(row['payload_json'])
+            application=con.execute('SELECT values_json,confirmed_at FROM case_data WHERE id=1').fetchone()
+            docs=con.execute('SELECT sha256 FROM documents ORDER BY id DESC LIMIT 1').fetchone()
+            document_sha=docs['sha256'] if docs else None
+            if not application['confirmed_at'] or review['values_sha256']!=legal_hash(json.loads(application['values_json'])) or review['master_version']!=LEGAL_MASTER['version'] or review.get('document_sha256')!=document_sha:
+                raise ValueError('STEP 01 신청정보를 최신 도면 기준으로 확정한 뒤 재생성하세요.')
+            if review.get('design_evidence',{})==ev:
+                return self.state()
+            review['design_evidence']=ev
+            review['screening_version']=SCREEN_VERSION
+            application_values=json.loads(application['values_json'])
+            for item in review['items']:
+                item['screening']=screen_item(item,application_values,ev)
+                # Evidence changes invalidate prior manual completion but preserve the original comment.
+                if item.get('progress')=='검토기록완료':
+                    item['progress']='검토중'
+                    item['applicability']='미확인'
+            review['screening_summary']=summarize_screen(review['items'])
+            review['confirmed_at']=None
+            con.execute('UPDATE records SET payload_json=? WHERE id=?',(json.dumps(review,ensure_ascii=False),row['id']))
+            con.execute('INSERT INTO history(happened_at,action,detail) VALUES (?,?,?)',
+                        (now(),'design_evidence','설계도서 수치 및 사건별 법령 스크리닝 재계산 · 기록확정 해제'))
         return self.state()
 
     def update_legal(self,item_id,applicability,progress,note):
@@ -374,7 +409,7 @@ class CaseStore:
             newest_doc=con.execute('SELECT sha256 FROM documents ORDER BY id DESC LIMIT 1').fetchone()
             newest_sha=newest_doc['sha256'] if newest_doc else None
             if (not data['confirmed_at'] or review['values_sha256']!=legal_hash(json.loads(data['values_json']))
-                or review['master_version']!=LEGAL_MASTER['version'] or review.get('document_sha256')!=newest_sha):
+                or review['master_version']!=LEGAL_MASTER['version'] or review.get('screening_version')!=SCREEN_VERSION or review.get('document_sha256')!=newest_sha):
                 raise ValueError('건축개요가 변경되었거나 미확정입니다. 1단계를 확정하고 체크리스트를 다시 생성하세요.')
             pending=[x['id'] for x in review['items'] if x['progress']!='검토기록완료' or x['applicability']=='미확인' or not x['note'].strip()]
             if pending:raise ValueError('담당자 검토 기록이 미완료인 항목: '+', '.join(pending))

@@ -2,6 +2,7 @@
 import hashlib
 import json
 from pathlib import Path
+from screening import screen_item, summarize_screen, evidence_values, SCREEN_VERSION
 
 ROOT=Path(__file__).resolve().parent
 MASTER=json.loads((ROOT/'masters'/'legal_checklist.json').read_text(encoding='utf-8'))
@@ -46,14 +47,18 @@ def priority(item, values):
     return '확인 자료 부족' if any(not values.get(f) for f in item['fields']) else '일반 검토 후보' 
 
 
-def build(values):
+def build(values, design_evidence=None):
+    design_evidence=evidence_values(design_evidence or {})
     items=[]
     for src in MASTER['items']:
         items.append({**src,'priority':priority(src,values),
                       'facts':{k:values.get(k,'') for k in src['fields']},
+                      'screening':screen_item(src,values,design_evidence),
                       'applicability':'미확인','progress':'미착수','note':'','reviewed_at':None})
     return {'master_version':MASTER['version'],'master_as_of':MASTER['as_of'],
             'values_sha256':snapshot(values),'confirmed_at':None,'items':items,
+            'design_evidence':design_evidence,'screening_version':SCREEN_VERSION,
+            'screening_summary':summarize_screen(items),
             'disclaimer':MASTER['disclaimer']}
 
 
@@ -67,3 +72,12 @@ def validate_edit(item_id, applicability, progress, note):
     if progress=='검토기록완료' and (applicability=='미확인' or not note.strip()):
         raise ValueError('검토기록 완료에는 적용 여부와 담당자 검토의견이 필요합니다.')
     return {'applicability':applicability,'progress':progress,'note':note.strip()}
+
+
+def refresh_screen(review, values):
+    """Populate screening for reopened legacy cases without silently changing stored judgments."""
+    ev=review.get('design_evidence') or {}
+    for item in review.get('items',[]):
+        item['screening']=screen_item(item,values,ev)
+    review['screening_summary']=summarize_screen(review.get('items',[]))
+    return review

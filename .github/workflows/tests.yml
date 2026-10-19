@@ -20,7 +20,7 @@ jobs:
       - name: Generate synthetic PDF fixtures
         run: python benchmarks/realform/generate.py
       - name: Python syntax check
-        run: python -m compileall -q server.py case_store.py parser.py benchmark.py practical_benchmark.py realform_benchmark.py demo_review.py tests
+        run: python -m compileall -q server.py case_store.py parser.py screening.py legal_review.py benchmark.py practical_benchmark.py realform_benchmark.py demo_review.py tests
       - name: JavaScript syntax check
         run: node --check static/app.js
       - name: Run unit and HTTP tests

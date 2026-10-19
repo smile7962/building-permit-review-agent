@@ -33,7 +33,7 @@
         <button class="step" data-step="8"><span class="step-num">08</span><span><strong>검토조서</strong><small>최종 검토초안</small></span><span class="lock">준비중</span></button>
         <button class="step" data-step="9"><span class="step-num">09</span><span><strong>처리공문</strong><small>처리결과 문서</small></span><span class="lock">준비중</span></button>
       </nav>
-      <div class="sidebar-footer"><span>Phase 2 / v0.2.1</span><small>현재: 신청정보 구조화 기능</small></div>
+      <div class="sidebar-footer"><span>Phase 2 / v0.2.2</span><small>현재: 신청정보 구조화 기능</small></div>
     </aside>
     <main class="main">
       <div id="phase1Screen">
@@ -104,16 +104,21 @@
       </section>
       </div>
       <div id="phase2Screen" hidden>
-        <div class="page-heading"><div><div class="eyebrow">STEP 02 · 건축법 검토</div><h1>건축법 검토 체크리스트</h1><p>검토항목은 참고 후보입니다. 관련 법령의 적용 여부와 검토결과는 담당자가 결정합니다.</p></div><span class="status" id="legalStatus">검토 전</span></div>
-        <section class="panel legal-panel"><div class="panel-heading"><div><h2>분야별 세부 법령 검토</h2><span id="legalVersion">검토 기준 마스터</span></div><button class="btn outline" id="legalBuildButton" type="button">체크리스트 생성·재생성</button></div>
-          <div class="legal-intro"><p>건축개요를 먼저 확정해야 체크리스트를 생성할 수 있습니다. 각 항목의 적용 여부·진행 상태·검토의견을 직접 입력합니다. 이 화면은 법적 적합성을 판단하지 않습니다.</p><p class="legal-alert" id="legalWarning"></p><div id="legalProgress"></div>
+        <div class="page-heading"><div><div class="eyebrow">STEP 02 · 건축법 검토</div><h1>사건별 법령·설계 적합성 검토</h1><p>확정된 건축개요로 검토 후보를 선별하고, 도면의 설계값과 해당 법령기준을 대조합니다. 최종 판단은 담당자가 합니다.</p></div><span class="status" id="legalStatus">검토 전</span></div>
+        <section class="panel legal-panel"><div class="panel-heading"><div><h2>사건별 적용조건 분석 · 설계 기준 대조</h2><span id="legalVersion">검토 기준 마스터</span></div><button class="btn outline" id="legalBuildButton" type="button">체크리스트 생성·재생성</button></div>
+          <div class="legal-intro"><p>건축개요와 도면 수치를 사용해 검토대상 후보를 추립니다. 자료 부족은 별도 표시하며, 설계기준 충족 여부는 담당자가 검토합니다.</p><p class="legal-alert" id="legalWarning"></p><div id="legalProgress"></div>
             <div class="legal-filters">
               <label>분야 <select id="legalGroupFilter" aria-label="법령 분야 선택"><option value="전체">전체 분야</option></select></label>
-              <label>검토 단계 <select id="legalReviewFilter" aria-label="검토 상태 선택"><option value="전체">모든 검토항목</option><option value="우선">우선 확인</option><option value="미검토">미검토</option><option value="완료">기록 완료</option><option value="대표항목">대표항목</option><option value="세부항목">세부항목</option></select></label>
+              <label>검토 단계 <select id="legalReviewFilter" aria-label="검토 상태 선택"><option value="사건별">사건별 검토 대상</option><option value="자료필요">추가자료 필요</option><option value="낮음">현재 우선순위 낮음</option><option value="전체">전체 원본 마스터</option><option value="우선">우선 확인</option><option value="미검토">미검토</option><option value="완료">기록 완료</option><option value="대표항목">대표항목</option><option value="세부항목">세부항목</option></select></label>
               <label>검색 <input id="legalSearch" type="search" placeholder="항목·법령·검토 질문 검색" autocomplete="off"></label>
             </div><div class="legal-filter-info" id="legalFilterInfo"></div></div>
+          <section class="legal-evidence-panel" aria-label="설계도서 확인 값">
+            <div class="legal-evidence-head"><div><h3>설계도서·법령기준 입력</h3><p>16개 건축개요에 없는 값만 담당자가 설계도면·법령에서 확인해 입력합니다. 임의 기준 자동 생성 없음.</p></div><button type="button" class="btn outline" id="designEvidenceSave">설계값 저장·재선별</button></div>
+            <div id="designEvidenceFields" class="legal-evidence-fields"></div>
+            <p class="legal-disclaimer">도로 2m는 「건축법」 제44조의 원칙으로, 예외 및 시행령의 추가 요건을 별도 확인해야 합니다. 입력 수치의 비교는 법적 적합성 결정이 아닙니다.</p>
+          </section>
           <div id="legalItems" class="legal-items"></div>
-          <div class="legal-footer"><span>대표·세부항목의 적용 여부와 근거를 담당자가 직접 확인한 후 기록을 확정하세요. (자동 적법 판정 없음)</span><button type="button" class="btn success" id="legalConfirmButton">검토기록 확정</button></div>
+          <div class="legal-footer"><span>최종 검토 확정 전 적용 기준일·도면·미판별 항목을 담당자가 별도 확인합니다. (자동 적법 판정 없음)</span><button type="button" class="btn success" id="legalConfirmButton">검토기록 확정</button></div>
         </section>
       </div>
     </main>
