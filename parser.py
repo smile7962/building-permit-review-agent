@@ -138,9 +138,13 @@ def extract_lines(filename, data):
         wb = load_workbook(io.BytesIO(data), data_only=True, read_only=True)
         for sheet in wb:
             for row_number, row in enumerate(sheet.iter_rows(values_only=True), 1):
-                cells = [str(v).strip() for v in row if v is not None]
+                # Preserve original cell columns so that left/right comparison
+                # areas and floor-level details remain distinguishable.
+                cells = [{'col': i, 'text': str(v).strip()}
+                         for i, v in enumerate(row) if v is not None and str(v).strip()]
                 if cells:
-                    append_text(': '.join(cells), f'{sheet.title} {row_number}행')
+                    append_text(' | '.join(c['text'] for c in cells), f'{sheet.title} {row_number}행')
+                    out[-1]['cells'] = cells
                 if row_number > 10000:
                     raise ValueError('시트는 10,000행 이내로 제한합니다.')
         wb.close()
@@ -278,6 +282,22 @@ def parse_application(filename, data, allowed_keys, consent=False):
     # The overall form summary overrides later building/floor details.
     values.update(form_values)
     sources.update(form_sources)
+    # Never interpret the list of *all* checkbox choices as one selection.
+    # Only trust exactly one explicit PDF/vector or cell checkbox evidence.
+    from seumteo_details import selected_work_type
+    if Path(filename).suffix.lower() in ('.pdf', '.xls', '.xlsx') and any(
+        '건축구분' in line['text'].replace(' ', '') for line in lines[:50]
+    ) and any(
+        ('허가신청서' in line['text'].replace(' ', '') or '신고서' in line['text'].replace(' ', ''))
+        for line in lines[:20]
+    ):
+        chosen = selected_work_type(lines)
+        if chosen:
+            values['work_type'] = chosen['value']
+            sources['work_type'] = {**chosen['source'], 'method': '명시적 체크표시', 'edited_by_user': False}
+        else:
+            values.pop('work_type', None)
+            sources.pop('work_type', None)
     method, warning = '규칙 기반', ''
     # AI runs separately through /api/ai-review and never silently overwrites values.
     return lines, values, sources, method, warning
