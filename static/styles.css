@@ -37,3 +37,26 @@
 @media(max-width:880px){.api-connection .panel-heading{flex-wrap:wrap;gap:12px}}
 
 .benchmark-practical-checks{padding:12px 16px;line-height:1.6;font-size:11px}.benchmark-practical-checks strong{display:block;margin:9px 0 4px}.benchmark-practical-checks p{margin:3px 0;color:#5b6981}
+
+/* Phase 2: reviewer-controlled legal checklist; never a legal verdict. */
+#phase1Screen[hidden],#phase2Screen[hidden]{display:none!important}
+.legal-intro{padding:14px 20px;border-bottom:1px solid var(--border)}
+.legal-intro p{line-height:1.7;margin:5px 0 8px;color:#596982}
+.legal-alert{color:#9a5e2b!important}
+.legal-items{padding:12px 20px;display:flex;flex-direction:column;gap:14px}
+.legal-item{border:1px solid #dde5f1;border-radius:8px;padding:18px;background:#fdfefe}
+.legal-item-head{display:flex;justify-content:space-between;gap:12px;align-items:start}
+.legal-item-head strong{font-size:14px}.legal-item-head small{display:block;margin-top:6px;color:#68809c}
+.legal-basis{color:#60738b;font-size:11px;margin:12px 0 8px}
+.legal-question{font-size:12px;font-weight:600;margin:8px 0;line-height:1.6}
+.legal-facts{background:#f0f5fb;padding:11px;border-radius:7px;display:flex;flex-wrap:wrap;gap:8px}
+.legal-facts span{font-size:11px;color:#43566e;padding:4px 6px;background:white;border-radius:5px}
+.legal-editors{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:15px}
+.legal-editors label{font-weight:700;font-size:11px;color:#43566e}
+.legal-input,.legal-note{display:block;width:100%;margin-top:7px;padding:9px;border:1px solid #d1dce9;border-radius:6px;background:#fff;color:#223754}
+.legal-note-label{grid-column:span 2}.legal-note{min-height:65px;resize:vertical}
+.legal-actions{display:flex;align-items:center;gap:14px;margin-top:12px}
+.legal-actions span{font-size:10px;color:#748198}
+.legal-footer{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-top:1px solid var(--border);gap:16px}
+.legal-footer span{font-size:11px;color:#5c7086}
+@media(max-width:700px){.legal-editors{grid-template-columns:1fr}.legal-note-label{grid-column:span 1}.legal-item-head{flex-wrap:wrap}.legal-footer{flex-direction:column;align-items:stretch}}

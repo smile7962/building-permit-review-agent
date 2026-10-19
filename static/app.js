@@ -7,6 +7,8 @@ let saveTimer = null;
 let saveQueue = Promise.resolve();
 let selectedDoc = null;
 let lastRequest = 0;
+let activeStep = 1;
+let legalMaster = null;
 
 async function api(path, {method='GET', json, raw}={}) {
   const options = {method, headers:{}};
@@ -115,6 +117,7 @@ function updateSummary() {
     row.append(create('span','',h.detail));list.append(row);
   }
   updateCounts();
+  renderLegal();
 }
 // A separate, source-linked draft. Only whitelisted edits are sent to the server.
 async function updateDetail(section,index,part,key,value) {
@@ -187,7 +190,7 @@ function render() {
   const grid=$('fieldGrid');grid.replaceChildren();
   for(const spec of definitions)grid.append(fieldElement(spec));
   updateSummary();
-  renderDetails();renderAiReview();
+  renderDetails();renderAiReview();renderLegal();
   const selector=$('documentSelector');selector.replaceChildren();
   const docs=current.documents || [];
   $('sourceEmpty').hidden=docs.length>0;
@@ -393,6 +396,95 @@ async function runPracticalBenchmark(mode){
   }catch(e){notify('실무형 평가 실패: '+e.message,true);}
   finally{button.disabled=(mode==='ai'&&!aiEnabled);button.textContent=oldText;}
 }
+
+function chooseBox(options,value){
+  const sel=create('select','legal-input');
+  for(const name of options){const option=create('option','',name);option.value=name;sel.append(option);}
+  sel.value=value||options[0];return sel;
+}
+function renderLegal(){
+  if(!legalMaster||!current)return;
+  const r=current.legal_review,root=$('legalItems');root.replaceChildren();
+  const stale=Boolean(r?.outdated||(r&&!current.confirmed_at));
+  $('legalVersion').textContent='검토 마스터 '+legalMaster.version+' · 기준일 '+legalMaster.as_of;
+  $('legalStatus').textContent=r?.confirmed_at&&!stale?'담당자 검토기록 확정':r?'확인·기록 필요':'검토 전';
+  $('legalStatus').classList.toggle('confirmed',Boolean(r?.confirmed_at&&!stale));
+  $('step2Mark').textContent=r?.confirmed_at&&!stale?'✓':r?'●':'○';
+  $('legalWarning').textContent=!current.confirmed_at?'STEP 01 건축개요를 먼저 검토 확정하세요.':
+    stale?'기초 건축개요·원본문서·마스터가 변경됐습니다. 이전 의견은 참고용으로만 두고 체크리스트를 다시 생성하세요.':
+    !r?'확정된 건축개요로 검토항목 후보를 생성하세요.':'법령 적용·적법 여부는 담당자가 결정합니다.';
+  if(!r){$('legalProgress').textContent='검토항목 미생성';$('legalConfirmButton').disabled=true;return;}
+  const done=r.items.filter(x=>x.progress==='검토기록완료').length;
+  $('legalProgress').textContent='검토기록 완료 '+done+'/'+r.items.length+' · 법령 기준일 및 조례 확인 필요';
+  $('legalConfirmButton').disabled=stale||!current.confirmed_at||r.items.some(x=>x.progress!=='검토기록완료'||x.applicability==='미확인'||!x.note.trim());
+  const labels=Object.fromEntries(definitions.map(d=>[d.key,d.label]));
+  for(const item of r.items){
+    const card=create('article','legal-item');
+    const head=create('div','legal-item-head'),title=create('div');
+    title.append(create('strong','',item.id+' · '+item.title));
+    title.append(create('small','',item.group+' · '+item.priority));
+    const url=create('a','textlink','법령 원문 열기 ↗');
+    url.href=item.url;url.target='_blank';url.rel='noopener noreferrer';
+    head.append(title,url);card.append(head);
+    card.append(create('p','legal-basis',item.basis),create('p','legal-question',item.question));
+    const facts=create('div','legal-facts');
+    for(const [key,value] of Object.entries(item.facts||{}))
+      facts.append(create('span','',(labels[key]||key)+': '+(value||'미입력')));
+    card.append(facts);
+    const editors=create('div','legal-editors');
+    const a=chooseBox(['미확인','적용','비적용'],item.applicability);
+    const p=chooseBox(['미착수','검토중','검토기록완료'],item.progress);
+    const note=create('textarea','legal-note');note.rows=3;note.maxLength=2500;note.value=item.note||'';
+    note.placeholder='적용 사유, 도면·법령 확인사항과 검토 기준일을 기재하세요.';
+    const al=create('label','','적용 여부');al.append(a);
+    const pl=create('label','','진행 상태');pl.append(p);
+    const nl=create('label','legal-note-label','담당자 검토의견');nl.append(note);
+    editors.append(al,pl,nl);card.append(editors);
+    const actions=create('div','legal-actions'),save=create('button','btn outline','이 항목 저장');
+    save.type='button';save.disabled=stale||!current.confirmed_at;
+    save.addEventListener('click',async()=>{
+      save.disabled=true;
+      try{
+        await persist();
+        const response=await api('/api/legal-update',{method:'POST',json:{
+          id:item.id,applicability:a.value,progress:p.value,note:note.value}});
+        current=response.case;renderLegal();updateSummary();
+        notify(item.id+' 검토 기록 저장 완료');
+      }catch(error){notify(error.message,true);save.disabled=false;}
+    });
+    actions.append(save);
+    if(item.reviewed_at)actions.append(create('span','',item.reviewed_at.replace('T',' ').slice(0,16)));
+    card.append(actions);root.append(card);
+  }
+}
+async function buildLegal(){
+  if(!current?.confirmed_at){notify('STEP 01 건축개요 검토확정 후 사용하세요.',true);return;}
+  if(current.legal_review&&!confirm('기존 항목별 검토의견이 초기화됩니다. 계속할까요?'))return;
+  try{
+    await persist();
+    const d=await api('/api/legal-build',{method:'POST',json:{init:true}});
+    current=d.case;renderLegal();updateSummary();notify('검토항목 후보 14개 생성');
+  }catch(e){notify(e.message,true);}
+}
+async function confirmLegal(){
+  try{
+    const d=await api('/api/legal-confirm',{method:'POST',json:{confirm:true}});
+    current=d.case;renderLegal();updateSummary();notify('담당자 검토기록 확정 · 적법성 자동판정 아님');
+  }catch(e){notify(e.message,true);}
+}
+async function switchStep(n){
+  if(n!==1&&n!==2)return;
+  if(n===2){try{await persist();}catch(e){notify(e.message,true);return;}}
+  activeStep=n;
+  $('phase1Screen').hidden=n!==1;
+  $('phase2Screen').hidden=n!==2;
+  document.querySelectorAll('.step').forEach(b=>b.classList.toggle('current',Number(b.dataset.step)===n));
+  document.querySelector('.sidebar-caption span').textContent=String(n).padStart(2,'0')+' / 09';
+  document.querySelector('.assistant-heading small').textContent=n===1?'현재 단계 · 신청서 분석':'현재 단계 · 건축법 검토';
+  if(n===2)renderLegal();
+  document.querySelector('main.main').scrollTop=0;
+}
+
 async function applyAiReview(){
   const ai=current?.ai_review;
   const keys=Array.from(document.querySelectorAll('.ai-pick:checked')).map(x=>x.value);
@@ -460,6 +552,8 @@ function setup(){
   $('caseInput').addEventListener('change',e=>{openCase(e.target.files?.[0]);e.target.value='';});
   $('exportButton').addEventListener('click',exportCase);
   $('confirmButton').addEventListener('click',confirmFields);
+  $('legalBuildButton').addEventListener('click',buildLegal);
+  $('legalConfirmButton').addEventListener('click',confirmLegal);
   $('aiRunButton').addEventListener('click',runAiReview);
   $('demoRunButton').addEventListener('click',runDemoReview);
   $('benchRulesButton').addEventListener('click',()=>runBenchmark('rules'));
@@ -477,7 +571,8 @@ function setup(){
   dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
   dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dragover');uploadFile(e.dataTransfer.files[0]);});
   document.querySelectorAll('.step').forEach(s=>s.addEventListener('click',()=>{
-    if(s.dataset.step!=='1')notify('해당 단계는 현재 개발 중입니다. Phase 1 검증 후 순차 구현합니다.');
+    if(s.dataset.step==='1'||s.dataset.step==='2')switchStep(Number(s.dataset.step));
+    else notify('STEP 03~09는 다음 개발 대상입니다.');
   }));
   // Closing the tab does not destroy the local working copy, but export is needed for portability.
   window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
@@ -485,7 +580,7 @@ function setup(){
 async function init(){
   setup();
   try{
-    const data=await api('/api/state');current=data.case;definitions=data.fields;
+    const data=await api('/api/state');current=data.case;definitions=data.fields;legalMaster=data.legal_master;
     aiEnabled=Boolean(data.ai_available);demoSha256=data.demo_sha256||'';
     $('benchAiButton').disabled=!aiEnabled;
     $('practicalAiButton').disabled=!aiEnabled;

@@ -1,0 +1,51 @@
+"""Human-in-the-loop legal review candidates. No compliance or applicability verdicts."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT=Path(__file__).resolve().parent
+MASTER=json.loads((ROOT/'masters'/'legal_checklist.json').read_text(encoding='utf-8'))
+IDS=frozenset(item['id'] for item in MASTER['items'])
+APPLICABILITY=frozenset(('미확인','적용','비적용'))
+PROGRESS=frozenset(('미착수','검토중','검토기록완료'))
+
+
+def snapshot(values):
+    return hashlib.sha256(json.dumps(values,sort_keys=True,ensure_ascii=False,
+                    separators=(',',':')).encode('utf-8')).hexdigest()
+
+
+def priority(item, values):
+    """Only review hints. Never mark compliance or legal exemption."""
+    kind=item.get('condition')
+    if kind=='alteration':
+        return '우선 확인' if values.get('work_type') in (
+            '증축','개축','재축','대수선','이전','허가사항 변경',
+            '신고사항 변경','용도변경') else '적용 여부 확인'
+    if kind=='residential_zoning':
+        zoning=values.get('zoning','')
+        return '우선 확인' if ('일반주거' in zoning or '전용주거' in zoning) else '적용 여부 확인'
+    return '확인 자료 부족' if any(not values.get(f) for f in item['fields']) else '일반 검토 후보'
+
+
+def build(values):
+    items=[]
+    for src in MASTER['items']:
+        items.append({**src,'priority':priority(src,values),
+                      'facts':{k:values.get(k,'') for k in src['fields']},
+                      'applicability':'미확인','progress':'미착수','note':'','reviewed_at':None})
+    return {'master_version':MASTER['version'],'master_as_of':MASTER['as_of'],
+            'values_sha256':snapshot(values),'confirmed_at':None,'items':items,
+            'disclaimer':MASTER['disclaimer']}
+
+
+def validate_edit(item_id,applicability,progress,note):
+    if item_id not in IDS:raise ValueError('유효하지 않은 검토항목입니다.')
+    if applicability not in APPLICABILITY:raise ValueError('적용 여부를 다시 선택하세요.')
+    if progress not in PROGRESS:raise ValueError('검토 진행 상태를 다시 선택하세요.')
+    if not isinstance(note,str) or len(note)>2500:raise ValueError('검토 의견은 2,500자 이하여야 합니다.')
+    if applicability=='비적용' and not note.strip():
+        raise ValueError('비적용 판단 시 구체적인 사유를 입력하세요.')
+    if progress=='검토기록완료' and (applicability=='미확인' or not note.strip()):
+        raise ValueError('검토기록 완료에는 적용 여부와 담당자 검토의견이 필요합니다.')
+    return {'applicability':applicability,'progress':progress,'note':note.strip()}

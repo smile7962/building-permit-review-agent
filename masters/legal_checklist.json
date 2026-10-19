@@ -1,0 +1,196 @@
+{
+  "version": "2026-10-19-draft-1",
+  "as_of": "2026-10-19",
+  "disclaimer": "실무 검토항목 후보 템플릿입니다. 법령 원문·시행일·조례·사실관계를 담당자가 확인해야 하며 적법성이나 적용 여부를 자동 판단하지 않습니다.",
+  "items": [
+    {
+      "id": "C01",
+      "group": "신청절차",
+      "title": "허가·신고 대상 및 신청서류",
+      "basis": "「건축법」 제11조(건축허가), 제14조(건축신고)",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "신청 구분과 건축구분의 요건, 첨부서류 및 처리절차를 확인했습니까?",
+      "fields": [
+        "permit_type",
+        "work_type"
+      ],
+      "condition": "all"
+    },
+    {
+      "id": "C02",
+      "group": "대지·도로",
+      "title": "대지와 도로의 관계",
+      "basis": "「건축법」 제44조(대지와 도로의 관계)",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "건축법상 도로 해당 여부, 접도 조건 및 특례를 원문·도면으로 확인했습니까?",
+      "fields": [
+        "site_address"
+      ],
+      "condition": "all"
+    },
+    {
+      "id": "C03",
+      "group": "대지·도로",
+      "title": "건축선 및 대지 안의 공지",
+      "basis": "「건축법」 제46조·제58조, 파주시 건축 조례(현행 확인)",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "건축선·인접대지경계선 이격과 해당 조례 기준을 확인했습니까?",
+      "fields": [
+        "site_address",
+        "primary_use"
+      ],
+      "condition": "all"
+    },
+    {
+      "id": "C04",
+      "group": "용도·입지",
+      "title": "건축물 용도분류",
+      "basis": "「건축법」 제2조제2항 및 「건축법 시행령」 별표 1",
+      "url": "https://www.law.go.kr/법령/건축법시행령",
+      "question": "주용도 및 복합용도의 세부 분류가 적정한지 사용 형태와 도면을 확인했습니까?",
+      "fields": [
+        "primary_use"
+      ],
+      "condition": "all"
+    },
+    {
+      "id": "C05",
+      "group": "용도·입지",
+      "title": "용도지역·지구별 건축 제한",
+      "basis": "「국토의 계획 및 이용에 관한 법률」 제76조, 관련 시행령·파주시 도시계획 조례(현행 확인)",
+      "url": "https://www.law.go.kr/법령/국토의계획및이용에관한법률",
+      "question": "해당 필지의 용도지역·지구 및 건축 제한을 별도 증빙으로 확인했습니까?",
+      "fields": [
+        "zoning",
+        "primary_use"
+      ],
+      "condition": "all"
+    },
+    {
+      "id": "C06",
+      "group": "규모·높이",
+      "title": "건폐율 기준 검토",
+      "basis": "「건축법」 제55조, 「국토의 계획 및 이용에 관한 법률」 제77조 및 조례",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "건폐율 산정면적과 적용 상한·완화 여부를 확인했습니까? 수치만으로 자동 적합 판정을 하지 않습니다.",
+      "fields": [
+        "site_area_m2",
+        "building_area_m2",
+        "building_coverage_percent",
+        "zoning"
+      ],
+      "condition": "all"
+    },
+    {
+      "id": "C07",
+      "group": "규모·높이",
+      "title": "용적률 기준 검토",
+      "basis": "「건축법」 제56조, 「국토의 계획 및 이용에 관한 법률」 제78조 및 조례",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "용적률 산정 제외면적, 적용 상한·완화 여부 및 전체 연면적을 확인했습니까?",
+      "fields": [
+        "site_area_m2",
+        "total_floor_area_m2",
+        "floor_area_ratio_percent",
+        "zoning"
+      ],
+      "condition": "all"
+    },
+    {
+      "id": "C08",
+      "group": "규모·높이",
+      "title": "건축물 높이 및 일조·채광",
+      "basis": "「건축법」 제60조·제61조(현행 시행일·조례 확인)",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "용도지역, 공동주택 여부, 대지 위치에 따라 높이·일조·채광 규정의 적용 범위를 확인했습니까?",
+      "fields": [
+        "zoning",
+        "primary_use",
+        "above_ground_floors"
+      ],
+      "condition": "residential_zoning"
+    },
+    {
+      "id": "C09",
+      "group": "안전·설비",
+      "title": "구조안전 관련 제출서류",
+      "basis": "「건축법」 제48조 및 하위 법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "규모·구조·건축구분에 따른 구조안전 확인 서류의 필요 여부를 검토했습니까?",
+      "fields": [
+        "structure",
+        "above_ground_floors",
+        "work_type"
+      ],
+      "condition": "all"
+    },
+    {
+      "id": "C10",
+      "group": "안전·설비",
+      "title": "피난·방화 및 마감재료",
+      "basis": "「건축법」 제49조·제52조 및 하위 법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "건축물 용도·규모별 피난·방화·마감재료 등의 적용 기준을 확인했습니까?",
+      "fields": [
+        "primary_use",
+        "total_floor_area_m2",
+        "above_ground_floors"
+      ],
+      "condition": "all"
+    },
+    {
+      "id": "C11",
+      "group": "주차·설비",
+      "title": "부설주차장 산정",
+      "basis": "「주차장법」 제19조 및 시행령·파주시 주차장 조례(현행 확인)",
+      "url": "https://www.law.go.kr/법령/주차장법",
+      "question": "용도·면적·증축/용도변경 여부에 따른 추가 주차대수를 검토했습니까?",
+      "fields": [
+        "primary_use",
+        "parking_spaces",
+        "work_type"
+      ],
+      "condition": "all"
+    },
+    {
+      "id": "C12",
+      "group": "관계법령",
+      "title": "관계법령 인허가 의제·협의 검토",
+      "basis": "「건축법」 제11조제5항·제14조제2항 등(해당 여부 별도 확인)",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "개발행위·농지·산지 등 의제 및 협의 필요 여부를 담당자가 확인했습니까?",
+      "fields": [
+        "site_address",
+        "zoning",
+        "work_type"
+      ],
+      "condition": "all"
+    },
+    {
+      "id": "C13",
+      "group": "건축구분별",
+      "title": "증축·대수선 등 기존건축물 확인",
+      "basis": "「건축법」 제2조·제11조·제14조 및 관련 하위 법령",
+      "url": "https://www.law.go.kr/법령/건축법",
+      "question": "기존 건축물의 적법 상태, 증축 전·후 면적 및 적용기준을 확인했습니까?",
+      "fields": [
+        "work_type",
+        "total_floor_area_m2"
+      ],
+      "condition": "alteration"
+    },
+    {
+      "id": "C14",
+      "group": "기록·근거",
+      "title": "현행 법령·조례 및 도면 근거 확인",
+      "basis": "「건축법」 등 관련 법령·파주시 자치법규(적용 기준일 직접 확인)",
+      "url": "https://www.law.go.kr/",
+      "question": "검토 적용 기준일, 도면·공적 장부·현행 조례와 주요 쟁점을 검토의견에 남겼습니까?",
+      "fields": [
+        "site_address",
+        "notes"
+      ],
+      "condition": "all"
+    }
+  ]
+}
