@@ -134,6 +134,30 @@ def parse_seumteo(lines, allowed_keys):
                             set_value('above_ground_floors', val, row)
                         break
 
+    # Read only the immediate line after an explicit first-page label;
+    # never infer a building count from page-2 building names.
+    for i, row in enumerate(first_page[:-1]):
+        label = norm(row['text'])
+        following = first_page[i + 1]
+        raw_value = following['text'].strip()
+        if label in ('지상층수', '지하층수', '주건축물수'):
+            key = {'지상층수':'above_ground_floors',
+                   '지하층수':'underground_floors',
+                   '주건축물수':'building_count'}[label]
+            m = re.fullmatch(r'\s*(\d{1,3})\s*(?:층|동)?\s*', raw_value)
+            if m:
+                set_value(key, m.group(1), following, explanation='전체 개요 다음 줄')
+        elif label in ('특이사항', '특기사항') and raw_value.startswith('[모의]'):
+            set_value('notes', raw_value, following, explanation='전체 개요 특이사항 다음 줄')
+
+    for row in first_page:
+        cells = row.get('cells', [])
+        for i, cell in enumerate(cells[:-1]):
+            if norm(cell['text']) in ('특이사항', '특기사항'):
+                val = cells[i + 1]['text'].strip()
+                if val and not re.search(r'(면적|주용도|주구조|건축구분)', val):
+                    set_value('notes', val, row)
+
     # For PDF, only the form page-1 summary is read. Later page floor / building
     # area fragments are intentionally ignored to avoid overwriting total areas.
     page_text = '\n'.join(row['text'] for row in first_page)
