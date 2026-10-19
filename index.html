@@ -60,6 +60,10 @@
           </div>
         </div>
       </section>
+      <section class="panel benchmark-panel" aria-label="실무형 PDF 문서 검증">
+        <div class="panel-heading"><div><h2>실무형 PDF 추출 평가 · Phase 1.10</h2><span>벡터 체크·지번 분리·증축 기존/신청 면적을 포함한 합성 PDF 2건</span></div><button class="btn outline" id="realformBenchButton" type="button">실무형 PDF 평가</button></div>
+        <div class="benchmark-body"><p class="benchmark-note">외부 AI를 호출하지 않습니다. 정형 TXT 평가와 독립적이며 미인식 체크표시도 그대로 보고합니다.</p><div id="realformBenchOutput" aria-live="polite"></div></div>
+      </section>
       <section class="panel benchmark-panel" aria-label="합성 신청서 추출 성능 평가">
         <div class="panel-heading"><div><h2>추출 정확도 평가 · 합성 시험자료</h2><span>사건 데이터는 변경하지 않습니다. 정답이 있는 가상 신청서 4건 / 16개 필드 기준</span></div>
           <div class="ai-actions"><button class="btn outline" type="button" id="benchRulesButton">규칙 추출 평가</button><button class="btn outline" type="button" id="benchAiButton" disabled>실제 AI 비교 평가 (최대 4회 API 호출)</button></div>
