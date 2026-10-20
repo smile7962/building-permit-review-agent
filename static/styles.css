@@ -83,3 +83,12 @@
 .legal-missing{color:#a2641c;font-weight:600;font-size:11px}.legal-check{color:#116b55;font-weight:650;font-size:12px}
 .legal-disclaimer{font-size:11px;color:#62738e;line-height:1.65;margin:12px 0 0}
 @media(max-width:680px){.legal-evidence-head{flex-direction:column;align-items:stretch}}
+
+/* Phase 2.3: highlight potential numeric exceedances / deficits (NOT illegality verdicts). */
+.legal-group-warning{border:1px solid #e8b5b1;}
+.legal-group-warning>.legal-group-title{background:#fff2f1;color:#ad2421;font-weight:800;}
+.legal-item-warning{border-left:5px solid #c62828;background:#fffdfd;}
+.legal-item-warning .legal-item-head strong,.legal-item-warning .legal-item-head small{color:#b42318;}
+.legal-check-warning{color:#b42318!important;font-size:13px;font-weight:800;line-height:1.75;border-left:3px solid #c62828;padding:8px 12px;background:#fff6f5;}
+.legal-check-ok{color:#256752!important;font-weight:650;}
+.legal-has-warning{color:#b42318;font-weight:750;}

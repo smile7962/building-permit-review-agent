@@ -32,11 +32,11 @@ jobs:
       - name: Package Windows source bundle
         if: success()
         run: |
-          zip -q -r building-permit-review-agent-v0.2.1.zip . -x '.git/*' 'workspace/*' '__pycache__/*' 'tests/__pycache__/*' '*.pyc'
+          zip -q -r building-permit-review-agent-v0.2.3.zip . -x '.git/*' 'workspace/*' '__pycache__/*' 'tests/__pycache__/*' '*.pyc'
       - name: Upload release bundle
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: building-on-v021-windows
-          path: building-permit-review-agent-v0.2.1.zip
+          name: building-on-v023-windows
+          path: building-permit-review-agent-v0.2.3.zip
           retention-days: 14
