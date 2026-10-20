@@ -102,7 +102,7 @@ def _calc_far(values,ev):
     base=f'용적률 산정용 연면적 {special}㎡ ÷ 대지면적 {site}㎡ = {_safe_percent(rate)}'
     if legal is None:return _status('검토대상',base+' · 해당 필지 상한·부칙 확인 필요',('법정 용적률 상한'))
     compare='기준값 이하 (제외면적·특례 확인)' if rate<=legal else '기준값 초과 의심 (예외·산정 확인)'
-    return _status('검토대상',base+f' / 입력 기준 {_safe_percent(legal)}',(),{'kind':'far','computed':str(rate.quantize(Decimal("0.01"))),'standard':str(legal),'result':compare})
+    return _status('검토대상',base+f' / 입력 기준 {_safe_percent(legal)}',(),{'kind':'far','computed':str(rate.quantize(Decimal("0.01"))),'standard':str(legal),'result':compare,'attention':'warning' if rate>legal else 'ok'})
 
 
 def _calc_road(ev):
