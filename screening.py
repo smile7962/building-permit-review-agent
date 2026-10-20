@@ -92,7 +92,7 @@ def _calc_coverage(values,ev):
     evidence=f'입력 건축면적 {building}㎡ ÷ 대지면적 {site}㎡ = {_safe_percent(rate)}'
     if legal is None:return _status('검토대상',evidence+' · 지역별 검증된 건폐율 상한 필요',('법정 건폐율 상한','법령·조례 시행일'))
     compare='기준값 이하 (적용·면적산정 재확인)' if rate<=legal else '기준값 초과 의심 (예외·산정법 확인)'
-    return _status('검토대상',evidence+f' / 입력 기준 {_safe_percent(legal)}',(),{'kind':'coverage','computed':str(rate.quantize(Decimal("0.01"))),'standard':str(legal),'result':compare})
+    return _status('검토대상',evidence+f' / 입력 기준 {_safe_percent(legal)}',(),{'kind':'coverage','computed':str(rate.quantize(Decimal("0.01"))),'standard':str(legal),'result':compare,'attention':'warning' if rate>legal else 'ok'})
 
 
 def _calc_far(values,ev):
@@ -113,14 +113,14 @@ def _calc_road(ev):
         return _status('자료필요','접한 통로가 건축법상 도로인지 확인되지 않았습니다. 도로 지정·예외 여부 조사 필요',('도로 법적 지위','도로 지정·공고 자료'))
     side='기본 접도길이 2m 이상' if frontage>=Decimal('2') else '기본 접도길이 2m 미만 (예외 검토 필요)'
     return _status('검토대상',f'설계 접도길이 {frontage}m · {side}. 건축법 제44조 단서 및 제2항·시행령 검토 필요',(),{
-        'kind':'road','measured':str(frontage),'standard':'2','result':side+' · 법적 적합성 미판단'})
+        'kind':'road','measured':str(frontage),'standard':'2','result':side+' · 법적 적합성 미판단','attention':'warning' if frontage<Decimal('2') else 'ok'})
 
 
 def _calc_parking(values,ev):
     planned=num(values.get('parking_spaces'));required=num(ev.get('legal_parking_min_spaces'))
     if planned is None or required is None:return _status('자료필요','주차장법·파주시 조례에 따라 필요 대수를 산정한 뒤 계획 대수와 대조해야 합니다.',('계획 주차대수','검증된 필요 주차대수'))
     result='수량상 충족 추정 (규격·증축/용도변경·산정 확인)' if planned>=required else '계획 대수 부족 의심 (완화·기존대수 확인)'
-    return _status('검토대상',f'계획 {planned}대 / 법정대수 입력 {required}대',(),{'kind':'parking','measured':str(planned),'standard':str(required),'result':result})
+    return _status('검토대상',f'계획 {planned}대 / 법정대수 입력 {required}대',(),{'kind':'parking','measured':str(planned),'standard':str(required),'result':result,'attention':'warning' if planned<required else 'ok'})
 
 
 def screen_item(item, values, evidence=None):
@@ -156,8 +156,10 @@ def screen_item(item, values, evidence=None):
 
 
 def summarize_screen(items):
-    counts={k:0 for k in ('검토대상','자료필요','우선낮음','분류항목')}
+    counts={k:0 for k in ('검토대상','자료필요','우선낮음','분류항목','주의검토')}
     for item in items:
         status=item.get('screening',{}).get('status','자료필요')
         counts[status]=counts.get(status,0)+1
+        if item.get('screening',{}).get('check',{} ) and item['screening']['check'].get('attention')=='warning':
+            counts['주의검토']+=1
     return counts
