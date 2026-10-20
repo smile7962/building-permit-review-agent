@@ -33,7 +33,7 @@
         <button class="step" data-step="8"><span class="step-num">08</span><span><strong>검토조서</strong><small>최종 검토초안</small></span><span class="lock">준비중</span></button>
         <button class="step" data-step="9"><span class="step-num">09</span><span><strong>처리공문</strong><small>처리결과 문서</small></span><span class="lock">준비중</span></button>
       </nav>
-      <div class="sidebar-footer"><span>Phase 2 / v0.2.3</span><small>현재: 신청정보 구조화 기능</small></div>
+      <div class="sidebar-footer"><span>Phase 2 / v0.2.4</span><small>현재: 신청정보 구조화 기능</small></div>
     </aside>
     <main class="main">
       <div id="phase1Screen">
@@ -116,6 +116,13 @@
             <div class="legal-evidence-head"><div><h3>설계도서·법령기준 입력</h3><p>16개 건축개요에 없는 값만 담당자가 설계도면·법령에서 확인해 입력합니다. 임의 기준 자동 생성 없음.</p></div><button type="button" class="btn outline" id="designEvidenceSave">설계값 저장·재선별</button></div>
             <div id="designEvidenceFields" class="legal-evidence-fields"></div>
             <p class="legal-disclaimer">도로 2m는 「건축법」 제44조의 원칙으로, 예외 및 시행령의 추가 요건을 별도 확인해야 합니다. 입력 수치의 비교는 법적 적합성 결정이 아닙니다.</p>
+          </section>
+          <section class="legal-preview-panel" aria-label="검토조서 자동 미리보기">
+            <div class="legal-evidence-head">
+              <div><h3>검토조서 자동 미리보기</h3><p>담당자가 저장한 검토결과와 빨간색 우선 확인사항을 집계합니다. 최종 처리문서가 아닙니다.</p></div>
+              <button class="btn outline" id="legalPreviewButton" type="button">검토조서 초안 갱신</button>
+            </div>
+            <div id="legalPreviewContent" aria-live="polite">먼저 검토항목을 저장한 후 초안을 갱신하세요.</div>
           </section>
           <div id="legalItems" class="legal-items"></div>
           <div class="legal-footer"><span>최종 검토 확정 전 적용 기준일·도면·미판별 항목을 담당자가 별도 확인합니다. (자동 적법 판정 없음)</span><button type="button" class="btn success" id="legalConfirmButton">검토기록 확정</button></div>

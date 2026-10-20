@@ -479,6 +479,16 @@ function renderLegal(){
       const link=create('a','textlink','근거법령 원문 ↗');link.href=item.url;link.target='_blank';link.rel='noopener noreferrer';title.append(link);block.append(title);
       block.append(create('p','legal-basis',item.basis));
       block.append(create('p','legal-question',item.question));
+      const guide=item.guidance;
+      if(guide){
+        const panel=create('section','legal-rule-card');
+        panel.append(create('strong','', '① 적용 법령 · 법령 기준'));
+        panel.append(create('p','legal-law',guide.law));
+        panel.append(create('p','legal-criterion',guide.rule));
+        panel.append(create('p','legal-docs','확인해야 할 도서: '+guide.drawing));
+        panel.append(create('small','legal-reference',guide.verification));
+        block.append(panel);
+      }
       const screen=item.screening||{};
       block.append(create('p','legal-screen-reason','선별 근거: '+(screen.reason||'추가자료 확인 필요')));
       if(screen.missing_inputs?.length)block.append(create('p','legal-missing','필요 자료: '+screen.missing_inputs.join(' · ')));
@@ -498,13 +508,28 @@ function renderLegal(){
       const note=create('textarea','legal-note');note.rows=3;note.maxLength=2500;note.placeholder='담당자가 조례·시행일·도면 근거, 적용 또는 비적용 사유를 기록하세요.';note.value=item.note||'';
       const aLabel=create('label','','적용 여부');aLabel.append(ap);const pLabel=create('label','','진행 상태');pLabel.append(pr);
       const nLabel=create('label','legal-note-label','담당자 검토의견');nLabel.append(note);
-      editor.append(aLabel,pLabel,nLabel);block.append(editor);
+      const reviewSelect=chooseBox(['미검토','적정(담당자 확인)','보완 필요','추가 확인','비적용(담당자 확인)'],item.review_result||'미검토');
+      const reviewLabel=create('label','','담당자 설계 검토결과');reviewLabel.append(reviewSelect);
+      const valInput=create('input','legal-input');valInput.value=item.drawing_value||'';valInput.maxLength=250;
+      valInput.placeholder='도면 확인값 또는 확인내용';
+      const valLabel=create('label','','② 설계도서 확인값');valLabel.append(valInput);
+      const drawingInput=create('input','legal-input');drawingInput.value=item.drawing_ref||'';drawingInput.maxLength=500;
+      drawingInput.placeholder='예: 배치도 A-101, 2쪽, 접도길이 치수';
+      const drawingLabel=create('label','','도면 근거 / 도면번호');drawingLabel.append(drawingInput);
+      const criteriaInput=create('input','legal-input');criteriaInput.value=item.criteria_ref||'';criteriaInput.maxLength=500;
+      criteriaInput.placeholder='예: 건축법 제44조 및 시행령 예외 검토, 기준일';
+      const criteriaLabel=create('label','','확인한 법령 기준 출처·시행일');criteriaLabel.append(criteriaInput);
+      editor.append(valLabel,drawingLabel,criteriaLabel,reviewLabel,aLabel,pLabel,nLabel);
+      block.append(editor);
       const save=create('button','btn outline','이 항목 저장');save.type='button';save.disabled=needsRefresh || !current.confirmed_at;
       save.addEventListener('click',async()=>{
         save.disabled=true;
         try{
           await persist();
-          const data=await api('/api/legal-update',{method:'POST',json:{id:item.id,applicability:ap.value,progress:pr.value,note:note.value}});
+          const data=await api('/api/legal-review-detail',{method:'POST',json:{
+             id:item.id,applicability:ap.value,progress:pr.value,note:note.value,
+             review_result:reviewSelect.value,drawing_value:valInput.value,
+             drawing_ref:drawingInput.value,criteria_ref:criteriaInput.value}});
           current=data.case;renderLegal();updateSummary();notify(`${item.id} 검토의견 저장 완료`);
         }catch(e){notify(e.message,true);save.disabled=false;}
       });
@@ -514,6 +539,30 @@ function renderLegal(){
     }
     section.append(stack);container.append(section);
   }
+}
+async function showLegalPreview(){
+  const area=$('legalPreviewContent');
+  if(!current?.legal_review){area.textContent='먼저 체크리스트를 생성하세요.';return;}
+  try{
+    const data=await api('/api/legal-preview',{method:'POST',json:{preview:true}});
+    const report=data.report;
+    area.replaceChildren();
+    area.append(create('p','legal-report-status',`검토조서 ${report.status} · 적정 ${report.summary['적정']||0} / 보완 ${report.summary['보완']||0} / 추가 확인 ${report.summary['추가 확인']||0} / 비적용 ${report.summary['비적용']||0} / 미검토 경고 ${report.summary['미검토·경고']||0}`));
+    area.append(create('p','legal-disclaimer',report.notice));
+    if(!report.rows.length){area.append(create('p','legal-disclaimer','저장된 검토의견이 아직 없습니다.'));return;}
+    const table=create('table','legal-report-table');
+    const top=create('tr');
+    for(const head of ['법령·검토항목','설계도서 근거','담당자 검토결과·의견'])top.append(create('th','',head));
+    table.append(top);
+    for(const item of report.rows){
+      const line=create('tr',item.attention?'legal-report-attention':'');
+      const law=create('td');law.append(create('strong','',item.title),create('p','',item.law),create('small','',item.comparison||'기준 수치 비교 없음'));
+      const drawing=create('td');drawing.append(create('p','',item.drawing_value||'확인값 미입력'),create('small','',item.drawing_ref||'도면 출처 미입력'));
+      const result=create('td');result.append(create('strong','',item.review_result),create('p','',item.note||'담당자 의견 미입력'),create('small','',item.criteria_ref||'법령 출처 미입력'));
+      line.append(law,drawing,result);table.append(line);
+    }
+    area.append(table);
+  }catch(err){notify('검토조서 미리보기 실패: '+err.message,true);}
 }
 function renderDesignEvidence(){
   const container=$('designEvidenceFields');if(!container)return;
@@ -651,6 +700,7 @@ function setup(){
   $('legalReviewFilter').addEventListener('change',renderLegal);
   $('legalSearch').addEventListener('input',renderLegal);
   $('legalConfirmButton').addEventListener('click',confirmLegal);
+  $('legalPreviewButton').addEventListener('click',showLegalPreview);
   $('aiRunButton').addEventListener('click',runAiReview);
   $('demoRunButton').addEventListener('click',runDemoReview);
   $('benchRulesButton').addEventListener('click',()=>runBenchmark('rules'));

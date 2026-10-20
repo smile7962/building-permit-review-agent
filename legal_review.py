@@ -3,6 +3,7 @@ import hashlib
 import json
 from pathlib import Path
 from screening import screen_item, summarize_screen, evidence_values, SCREEN_VERSION
+from review_guidance import guidance
 
 ROOT=Path(__file__).resolve().parent
 MASTER=json.loads((ROOT/'masters'/'legal_checklist.json').read_text(encoding='utf-8'))
@@ -54,7 +55,9 @@ def build(values, design_evidence=None):
         items.append({**src,'priority':priority(src,values),
                       'facts':{k:values.get(k,'') for k in src['fields']},
                       'screening':screen_item(src,values,design_evidence),
-                      'applicability':'미확인','progress':'미착수','note':'','reviewed_at':None})
+                      'guidance':guidance(src),
+                      'applicability':'미확인','progress':'미착수','note':'','reviewed_at':None,
+                      'review_result':'미검토','drawing_value':'','drawing_ref':'','criteria_ref':''})
     return {'master_version':MASTER['version'],'master_as_of':MASTER['as_of'],
             'values_sha256':snapshot(values),'confirmed_at':None,'items':items,
             'design_evidence':design_evidence,'screening_version':SCREEN_VERSION,
@@ -79,5 +82,6 @@ def refresh_screen(review, values):
     ev=review.get('design_evidence') or {}
     for item in review.get('items',[]):
         item['screening']=screen_item(item,values,ev)
+        item['guidance']=guidance(item)
     review['screening_summary']=summarize_screen(review.get('items',[]))
     return review

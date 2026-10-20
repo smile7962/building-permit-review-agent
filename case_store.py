@@ -12,6 +12,7 @@ from pathlib import Path
 SCHEMA_VERSION = 1
 from legal_review import build as build_legal, snapshot as legal_hash, MASTER as LEGAL_MASTER, validate_edit as validate_legal_edit, refresh_screen
 from screening import evidence_values, SCREEN_VERSION, screen_item, summarize_screen
+from review_guidance import validate_verification
 APPLICATION_ID = 0x42434153  # BCAS: distinguish our SQLite file
 
 
@@ -366,7 +367,8 @@ class CaseStore:
             application_values=json.loads(application['values_json'])
             for item in review['items']:
                 item['screening']=screen_item(item,application_values,ev)
-                # Evidence changes invalidate prior manual completion but preserve the original comment.
+                # Changed inputs invalidate every recorded verdict; preserve comment and drawing evidence.
+                item['review_result']='미검토'
                 if item.get('progress')=='검토기록완료':
                     item['progress']='검토중'
                     item['applicability']='미확인'
@@ -398,6 +400,41 @@ class CaseStore:
                             (json.dumps(review,ensure_ascii=False),row['id']))
                 con.execute('INSERT INTO history(happened_at,action,detail) VALUES (?,?,?)',
                             (now(),'legal_edit',f'건축법 검토 {item_id}: 담당자 기록 수정, 확정 해제'))
+        return self.state()
+
+    def save_legal_verification(self, item_id, applicability, progress, note,
+                                review_result, drawing_value, drawing_ref, criteria_ref):
+        """Save a reviewer decision only; do not infer legal approval."""
+        edit=validate_legal_edit(item_id,applicability,progress,note)
+        extra=validate_verification(review_result,drawing_value,drawing_ref,criteria_ref,edit['note'])
+        if review_result=='비적용(담당자 확인)' and applicability!='비적용':
+            raise ValueError('비적용 결과는 적용 여부도 비적용으로 표시해야 합니다.')
+        if review_result in ('적정(담당자 확인)','보완 필요') and applicability!='적용':
+            raise ValueError('적정·보완 결과는 적용 여부를 적용으로 선택해야 합니다.')
+        with self.lock,self._connect() as con:
+            row=con.execute("SELECT id,payload_json FROM records WHERE category='legal_checklist' ORDER BY id DESC LIMIT 1").fetchone()
+            if not row:raise ValueError('먼저 사건별 검토항목을 생성하세요.')
+            review=json.loads(row['payload_json'])
+            case=con.execute('SELECT values_json,confirmed_at FROM case_data WHERE id=1').fetchone()
+            latest=con.execute('SELECT sha256 FROM documents ORDER BY id DESC LIMIT 1').fetchone()
+            sha=latest['sha256'] if latest else None
+            if (not case['confirmed_at'] or
+                review['values_sha256']!=legal_hash(json.loads(case['values_json'])) or
+                review['master_version']!=LEGAL_MASTER['version'] or
+                review.get('document_sha256')!=sha or
+                review.get('screening_version')!=SCREEN_VERSION):
+                raise ValueError('건축개요·도면·마스터 버전이 변경됐습니다. 확인 후 다시 생성하세요.')
+            item=next((x for x in review['items'] if x['id']==item_id),None)
+            if not item:raise ValueError('유효하지 않은 검토항목입니다.')
+            update={**edit,**extra}
+            if any(item.get(k)!=v for k,v in update.items()):
+                item.update(update)
+                item['reviewed_at']=now()
+                review['confirmed_at']=None
+                con.execute('UPDATE records SET payload_json=? WHERE id=?',
+                            (json.dumps(review,ensure_ascii=False),row['id']))
+                con.execute('INSERT INTO history(happened_at,action,detail) VALUES (?,?,?)',
+                            (now(),'legal_verification',f'{item_id}: 담당자 도면·법령 대조 및 검토결과 저장'))
         return self.state()
 
     def confirm_legal(self):
