@@ -458,7 +458,7 @@ function renderLegal(){
   $('legalFilterInfo').textContent=`현재 표시 ${selected.length}개 · 이 중 우선 확인 신호 ${warningCount}개. 빨간색은 수치 비교상의 재검토 요청이며 위법 판정이 아닙니다.`;
   const grouped=new Map();
   // A dedicated first group makes warnings visible before other legal categories.
-  for(const item of selected){
+  for(const item of [...selected].sort((a,b)=>Number(needsAttention(b))-Number(needsAttention(a)))){
     const group=needsAttention(item)?'⚠ 기준 초과·부족·예외 확인':legalGroup(item);
     if(!grouped.has(group))grouped.set(group,[]);grouped.get(group).push(item);
   }
