@@ -27,6 +27,7 @@ from practical_benchmark import run_practical_benchmark
 from synthetic_gate import require_approved_fixture, require_bundled_fixture_integrity
 from legal_review import MASTER as LEGAL_MASTER
 from screening import DESIGN_FIELDS
+from review_report import preview as legal_preview
 
 ROOT = Path(__file__).resolve().parent
 PORT = int(os.environ.get('APP_PORT', '8765'))
@@ -50,7 +51,7 @@ def store():
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'BuildingPermitReview/0.2.3'
+    server_version = 'BuildingPermitReview/0.2.4'
 
     def _headers(self, status, mime='application/json; charset=utf-8', size=None, more=None):
         self.send_response(status)
@@ -163,6 +164,15 @@ class Handler(BaseHTTPRequestHandler):
         elif parsed.path == '/api/legal-update':
             obj=json.loads(self._read(8*1024))
             self._json(200, {'case':store().update_legal(obj.get('id'),obj.get('applicability'),obj.get('progress'),obj.get('note'))})
+        elif parsed.path == '/api/legal-review-detail':
+            obj=json.loads(self._read(16*1024))
+            self._json(200, {'case':store().save_legal_verification(
+                obj.get('id'),obj.get('applicability'),obj.get('progress'),obj.get('note'),
+                obj.get('review_result'),obj.get('drawing_value'),obj.get('drawing_ref'),
+                obj.get('criteria_ref'))})
+        elif parsed.path == '/api/legal-preview':
+            self._read(1024)
+            self._json(200, {'report':legal_preview(store().state())})
         elif parsed.path == '/api/legal-confirm':
             self._read(1024)
             self._json(200, {'case': store().confirm_legal()})
@@ -267,7 +277,7 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     store()
     httpd = ThreadingHTTPServer(('127.0.0.1', PORT), Handler)
-    print(f'건축인허가 AI 지원 v0.2.3 실행: http://127.0.0.1:{PORT}', flush=True)
+    print(f'건축인허가 AI 지원 v0.2.4 실행: http://127.0.0.1:{PORT}', flush=True)
     print('로컬 PC에서만 접근 가능합니다. 종료: Ctrl+C', flush=True)
     if os.environ.get('APP_NO_BROWSER') != '1':
         threading.Timer(0.8, lambda: webbrowser.open(f'http://127.0.0.1:{PORT}')).start()
