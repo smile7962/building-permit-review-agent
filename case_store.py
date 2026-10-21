@@ -13,6 +13,7 @@ SCHEMA_VERSION = 1
 from legal_review import build as build_legal, snapshot as legal_hash, MASTER as LEGAL_MASTER, validate_edit as validate_legal_edit, refresh_screen
 from screening import evidence_values, SCREEN_VERSION, screen_item, summarize_screen
 from review_guidance import validate_verification
+from ordinance_review import assess as assess_ordinance, validate_inputs as ordinance_inputs, validate_decision as ordinance_decision, VERSION as ORDINANCE_VERSION
 APPLICATION_ID = 0x42434153  # BCAS: distinguish our SQLite file
 
 
@@ -146,12 +147,27 @@ class CaseStore:
                     or legal.get('document_sha256') != latest_doc_sha)
                 refresh_screen(legal, json.loads(row['values_json']))
                 legal['screening_needs_refresh'] = legal.get('screening_version') != SCREEN_VERSION
+            ord_row=con.execute("SELECT payload_json FROM records WHERE category='ordinance_review' ORDER BY id DESC LIMIT 1").fetchone()
+            ordinance=None
+            if ord_row:
+                o=json.loads(ord_row[0]);values=json.loads(row['values_json'])
+                latest_doc_sha=documents[0]['sha256'] if documents else None
+                evidence=(legal or {}).get('design_evidence') or {}
+                stale=(o.get('values_sha256')!=legal_hash(values) or o.get('document_sha256')!=latest_doc_sha
+                       or o.get('version')!=ORDINANCE_VERSION or not row['confirmed_at']
+                       or o.get('evidence_sha256')!=legal_hash(evidence))
+                ordinance={**assess_ordinance(values,evidence,o['inputs']),'inputs':o['inputs'],
+                           'outdated':stale,'decisions':{} if stale else o.get('decisions',{})}
+                for check in ordinance['checks']:
+                    if check['id'] in ordinance['decisions']:
+                        check['human_review']=ordinance['decisions'][check['id']]
             ai_row = con.execute("SELECT payload_json FROM records WHERE category='ai_review' ORDER BY id DESC LIMIT 1").fetchone()
             ai = json.loads(ai_row[0]) if ai_row else None
             if not documents or (ai and ai.get('document_id') != documents[0]['id']):
                 ai = None
             return {
                 'ai_review': ai,
+                'ordinance_review': ordinance,
                 'legal_review': legal,
                 'case_id': row['case_id'],
                 'values': json.loads(row['values_json']),
@@ -367,11 +383,12 @@ class CaseStore:
             application_values=json.loads(application['values_json'])
             for item in review['items']:
                 item['screening']=screen_item(item,application_values,ev)
-                # Changed inputs invalidate every recorded verdict; preserve comment and drawing evidence.
+                # Changed design evidence invalidates every human outcome; retain source/comment for audit.
                 item['review_result']='미검토'
                 if item.get('progress')=='검토기록완료':
                     item['progress']='검토중'
                     item['applicability']='미확인'
+                    item['review_result']='미검토'
             review['screening_summary']=summarize_screen(review['items'])
             review['confirmed_at']=None
             con.execute('UPDATE records SET payload_json=? WHERE id=?',(json.dumps(review,ensure_ascii=False),row['id']))
@@ -404,29 +421,25 @@ class CaseStore:
 
     def save_legal_verification(self, item_id, applicability, progress, note,
                                 review_result, drawing_value, drawing_ref, criteria_ref):
-        """Save a reviewer decision only; do not infer legal approval."""
-        edit=validate_legal_edit(item_id,applicability,progress,note)
-        extra=validate_verification(review_result,drawing_value,drawing_ref,criteria_ref,edit['note'])
-        if review_result=='비적용(담당자 확인)' and applicability!='비적용':
+        """Save explicit reviewer decision, not a machine verdict; preserve case schema."""
+        edit = validate_legal_edit(item_id, applicability, progress, note)
+        extra = validate_verification(review_result, drawing_value, drawing_ref, criteria_ref, edit['note'])
+        if review_result == '비적용(담당자 확인)' and applicability != '비적용':
             raise ValueError('비적용 결과는 적용 여부도 비적용으로 표시해야 합니다.')
-        if review_result in ('적정(담당자 확인)','보완 필요') and applicability!='적용':
+        if review_result in ('적정(담당자 확인)', '보완 필요') and applicability != '적용':
             raise ValueError('적정·보완 결과는 적용 여부를 적용으로 선택해야 합니다.')
-        with self.lock,self._connect() as con:
+        with self.lock, self._connect() as con:
             row=con.execute("SELECT id,payload_json FROM records WHERE category='legal_checklist' ORDER BY id DESC LIMIT 1").fetchone()
-            if not row:raise ValueError('먼저 사건별 검토항목을 생성하세요.')
+            if not row: raise ValueError('먼저 사건별 검토항목을 생성하세요.')
             review=json.loads(row['payload_json'])
             case=con.execute('SELECT values_json,confirmed_at FROM case_data WHERE id=1').fetchone()
             latest=con.execute('SELECT sha256 FROM documents ORDER BY id DESC LIMIT 1').fetchone()
             sha=latest['sha256'] if latest else None
-            if (not case['confirmed_at'] or
-                review['values_sha256']!=legal_hash(json.loads(case['values_json'])) or
-                review['master_version']!=LEGAL_MASTER['version'] or
-                review.get('document_sha256')!=sha or
-                review.get('screening_version')!=SCREEN_VERSION):
+            if not case['confirmed_at'] or review['values_sha256'] != legal_hash(json.loads(case['values_json'])) or review['master_version'] != LEGAL_MASTER['version'] or review.get('document_sha256') != sha or review.get('screening_version') != SCREEN_VERSION:
                 raise ValueError('건축개요·도면·마스터 버전이 변경됐습니다. 확인 후 다시 생성하세요.')
             item=next((x for x in review['items'] if x['id']==item_id),None)
-            if not item:raise ValueError('유효하지 않은 검토항목입니다.')
-            update={**edit,**extra}
+            if not item: raise ValueError('유효하지 않은 검토항목입니다.')
+            update={**edit, **extra}
             if any(item.get(k)!=v for k,v in update.items()):
                 item.update(update)
                 item['reviewed_at']=now()
@@ -435,6 +448,52 @@ class CaseStore:
                             (json.dumps(review,ensure_ascii=False),row['id']))
                 con.execute('INSERT INTO history(happened_at,action,detail) VALUES (?,?,?)',
                             (now(),'legal_verification',f'{item_id}: 담당자 도면·법령 대조 및 검토결과 저장'))
+        return self.state()
+
+    def save_ordinance_inputs(self, data):
+        """Save a verified-input worksheet; changing input invalidates human decisions."""
+        inputs=ordinance_inputs(data)
+        with self.lock,self._connect() as con:
+            row=con.execute('SELECT values_json,confirmed_at FROM case_data WHERE id=1').fetchone()
+            if not row['confirmed_at']:raise ValueError('STEP 01 건축개요를 먼저 확정하세요.')
+            docs=con.execute('SELECT sha256 FROM documents ORDER BY id DESC LIMIT 1').fetchone()
+            docsha=docs['sha256'] if docs else None
+            legal_row=con.execute("SELECT payload_json FROM records WHERE category='legal_checklist' ORDER BY id DESC LIMIT 1").fetchone()
+            ev=(json.loads(legal_row['payload_json']).get('design_evidence') or {}) if legal_row else {}
+            ev_sha=legal_hash(ev)
+            earlier=con.execute("SELECT payload_json FROM records WHERE category='ordinance_review' ORDER BY id DESC LIMIT 1").fetchone()
+            prev=json.loads(earlier['payload_json']) if earlier else {}
+            values_sha=legal_hash(json.loads(row['values_json']))
+            if prev.get('inputs')==inputs and prev.get('values_sha256')==values_sha and prev.get('document_sha256')==docsha and prev.get('version')==ORDINANCE_VERSION and prev.get('evidence_sha256')==ev_sha:
+                return self.state()
+            payload={'inputs':inputs,'values_sha256':values_sha,'document_sha256':docsha,
+                     'evidence_sha256':ev_sha,'version':ORDINANCE_VERSION,'decisions':{}}
+            con.execute("INSERT INTO records(category,cycle,payload_json,created_at) VALUES ('ordinance_review',NULL,?,?)",
+                        (json.dumps(payload,ensure_ascii=False),now()))
+            con.execute('INSERT INTO history(happened_at,action,detail) VALUES (?,?,?)',
+                        (now(),'ordinance_inputs','파주시 조례 검토 입력값 저장; 이전 담당자 판단 재확인 필요'))
+        return self.state()
+
+    def save_ordinance_decision(self, key, value, note, drawing_ref, criteria_ref):
+        if key not in ('PZ01','PZ02','PZ03','PZ04','PZ05'):raise ValueError('알 수 없는 조례 검토항목입니다.')
+        decision=ordinance_decision(value,note,drawing_ref,criteria_ref)
+        with self.lock,self._connect() as con:
+            previous=con.execute("SELECT payload_json FROM records WHERE category='ordinance_review' ORDER BY id DESC LIMIT 1").fetchone()
+            if not previous:raise ValueError('먼저 조례 계산 조건을 저장하세요.')
+            o=json.loads(previous['payload_json'])
+            current=con.execute('SELECT values_json,confirmed_at FROM case_data WHERE id=1').fetchone()
+            newest=con.execute('SELECT sha256 FROM documents ORDER BY id DESC LIMIT 1').fetchone()
+            docsha=newest['sha256'] if newest else None
+            lr=con.execute("SELECT payload_json FROM records WHERE category='legal_checklist' ORDER BY id DESC LIMIT 1").fetchone()
+            ev=(json.loads(lr['payload_json']).get('design_evidence') or {}) if lr else {}
+            if not current['confirmed_at'] or o['values_sha256']!=legal_hash(json.loads(current['values_json'])) or o.get('document_sha256')!=docsha or o.get('evidence_sha256')!=legal_hash(ev) or o.get('version')!=ORDINANCE_VERSION:
+                raise ValueError('신청정보 또는 법령 마스터가 변경되었습니다. 조례 검토를 재실행하세요.')
+            if o.get('decisions',{}).get(key)!=decision:
+                o.setdefault('decisions',{})[key]={**decision,'reviewed_at':now()}
+                con.execute("INSERT INTO records(category,cycle,payload_json,created_at) VALUES ('ordinance_review',NULL,?,?)",
+                            (json.dumps(o,ensure_ascii=False),now()))
+                con.execute('INSERT INTO history(happened_at,action,detail) VALUES (?,?,?)',
+                            (now(),'ordinance_decision',f'{key} 담당자 조례 검토기록 저장'))
         return self.state()
 
     def confirm_legal(self):

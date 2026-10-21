@@ -10,6 +10,7 @@ let lastRequest = 0;
 let activeStep = 1;
 let legalMaster = null;
 let designFields=[];
+
 let renderedEvidenceKey = null;
 const legalOpenGroups = new Set(["대표 검토", "신청절차"]);
 
@@ -431,9 +432,69 @@ function matchesLegal(item){
   if(term && ![item.id,item.title,item.group,item.basis,item.question,...(item.required_docs||[])].join(' ').toLocaleLowerCase('ko').includes(term))return false;
   return true;
 }
+
+const ORDINANCE_SPECS = [
+ ['parking_scenario','주차 산정 유형',['','신축·단일용도','복합용도','증축','용도변경','기타']],
+ ['parking_type','주차시설물 세부유형',['','위락시설','문화 및 집회시설','판매시설','업무시설(오피스텔 제외)','제1종 근린생활시설(제외시설 아님)','제2종 근린생활시설','단독주택(다가구 제외)','공장(특례 아닌 일반)','창고시설','그 밖의 건축물','다가구·공동주택·오피스텔 등(세대별 산정)']],
+ ['parking_area_m2','해당 용도 시설면적(㎡, 공용 포함)'],
+ ['building_line_setback_m','건축선 이격거리(m)'],
+ ['boundary_setback_m','인접대지경계선 이격거리(m)'],
+ ['building_road_width_m','접한 도로 너비(m)'],
+ ['basis_date','확인한 법령 적용 기준일 (YYYY-MM-DD)']
+];
+let renderedOrdinanceKey = '';
+function renderOrdinance(){
+  const area=$('ordinanceFields'),view=$('ordinanceResults');if(!area||!current)return;
+  const o=current.ordinance_review,inputs=o?.inputs||{};
+  const key=(current.case_id||'')+JSON.stringify(inputs);
+  if(renderedOrdinanceKey!==key||area.childElementCount!==ORDINANCE_SPECS.length){
+    area.replaceChildren();
+    for(const [name,label,opts] of ORDINANCE_SPECS){
+      const box=create('label','design-evidence-field');box.append(create('span','',label));
+      let ctl;
+      if(opts){ctl=create('select','legal-input');for(const v of opts){const opt=create('option','',v||'선택하세요');opt.value=v;ctl.append(opt);}}
+      else{ctl=create('input','legal-input');ctl.type=name==='basis_date'?'date':'number';ctl.step='any';}
+      ctl.id='ord_'+name;ctl.value=inputs[name]||'';box.append(ctl);area.append(box);
+    }
+    renderedOrdinanceKey=key;
+  }
+  $('ordinanceSaveButton').disabled=!current.confirmed_at;
+  view.replaceChildren();
+  if(!o){view.append(create('p','legal-disclaimer','STEP 01을 확정한 뒤 조례 검토조건을 저장하세요.'));return;}
+  if(o.outdated)view.append(create('p','legal-check-warning','신청정보나 법령규칙이 바뀌었습니다. 조례 검토조건을 다시 저장해야 하며 기존 담당자 판단은 재확인해야 합니다.'));
+  view.append(create('p','legal-disclaimer',o.notice||''));
+  for(const ch of o.checks||[]){
+    const block=create('article','ordinance-result '+(ch.attention==='warning'?'legal-item-warning':''));
+    block.append(create('strong','',`${ch.id} · ${ch.title}`));
+    block.append(create('p','legal-basis','적용 조항: '+ch.reference));
+    block.append(create('p','legal-screen-reason','기본 기준: '+ch.criterion));
+    block.append(create('p','legal-facts','설계·입력: '+ch.design_value));
+    block.append(create('p',ch.attention==='warning'?'legal-check-warning':'legal-check','비교 초안: '+ch.result));
+    if(ch.needs_confirmation)block.append(create('p','legal-missing','담당자 확인사항: '+ch.needs_confirmation));
+    const saved=ch.human_review||{};
+    const sel=chooseBox(['미검토','적정(담당자 확인)','보완 필요','추가 확인','비적용(담당자 확인)'],saved.review_result||'미검토');
+    const note=create('textarea','legal-note');note.rows=2;note.placeholder='조례의 적용근거·예외·검토의견을 입력하세요.';note.value=saved.note||'';
+    const drawing=create('input','legal-input');drawing.placeholder='도면번호 및 확인 위치';drawing.maxLength=500;drawing.value=saved.drawing_ref||'';
+    const criteria=create('input','legal-input');criteria.placeholder='확인한 법령판본, 시행일, 별표 및 부칙';criteria.maxLength=500;criteria.value=saved.criteria_ref||'';
+    const label=(labelName,child)=>{const l=create('label','',labelName);l.append(child);return l;};
+    const editor=create('div','ordinance-editors');editor.append(label('담당자 검토결과',sel),label('도면 근거',drawing),label('법령 출처·시행일',criteria),label('검토의견',note));block.append(editor);
+    const save=create('button','btn outline','담당자 판단 저장');save.type='button';save.disabled=o.outdated||!current.confirmed_at;
+    save.addEventListener('click',async()=>{try{const r=await api('/api/ordinance-decision',{method:'POST',json:{id:ch.id,review_result:sel.value,note:note.value,drawing_ref:drawing.value,criteria_ref:criteria.value}});current=r.case;renderLegal();notify(ch.title+' 검토의견을 사건파일에 저장했습니다.');}catch(e){notify(e.message,true);}});
+    block.append(save);view.append(block);
+  }
+}
+async function saveOrdinance(){
+  try{
+    await persist();const values={};for(const [name] of ORDINANCE_SPECS)values[name]=$('ord_'+name)?.value||'';
+    const r=await api('/api/ordinance-inputs',{method:'POST',json:{values}});
+    current=r.case;renderLegal();notify('조례 기본기준 비교를 갱신했습니다. 검토기준일과 예외를 확인하세요.');
+  }catch(e){notify(e.message,true);}
+}
+
 function renderLegal(){
   if(!legalMaster || !current)return;
   renderDesignEvidence();
+  renderOrdinance();
   const state=current.legal_review,container=$('legalItems');container.replaceChildren();
   const confirmEl=$('legalConfirmButton');
   const needsRefresh=Boolean(state?.outdated || state?.screening_needs_refresh || (state && !current.confirmed_at));
@@ -549,7 +610,7 @@ async function showLegalPreview(){
     area.replaceChildren();
     area.append(create('p','legal-report-status',`검토조서 ${report.status} · 적정 ${report.summary['적정']||0} / 보완 ${report.summary['보완']||0} / 추가 확인 ${report.summary['추가 확인']||0} / 비적용 ${report.summary['비적용']||0} / 미검토 경고 ${report.summary['미검토·경고']||0}`));
     area.append(create('p','legal-disclaimer',report.notice));
-    if(!report.rows.length){area.append(create('p','legal-disclaimer','저장된 검토의견이 아직 없습니다.'));return;}
+    if(!report.rows.length)area.append(create('p','legal-disclaimer','기존 체크리스트에 저장된 검토의견이 아직 없습니다.'));
     const table=create('table','legal-report-table');
     const top=create('tr');
     for(const head of ['법령·검토항목','설계도서 근거','담당자 검토결과·의견'])top.append(create('th','',head));
@@ -561,7 +622,22 @@ async function showLegalPreview(){
       const result=create('td');result.append(create('strong','',item.review_result),create('p','',item.note||'담당자 의견 미입력'),create('small','',item.criteria_ref||'법령 출처 미입력'));
       line.append(law,drawing,result);table.append(line);
     }
-    area.append(table);
+    if(report.rows.length)area.append(table);
+    if(report.ordinance_checks?.length){
+      area.append(create('h4','','파주시 조례 기본기준 비교 · 담당자 판단 기록 (별도)'));
+      area.append(create('p','legal-disclaimer','조례 2025년판, 주차장 별표 2019년판의 참고 검토이며 현행 법정기준 확인 전 적법 판단이 아닙니다.'));
+      const ordTable=create('table','legal-report-table');
+      const top=create('tr');for(const v of ['조례 검토항목·근거','기준/계산 결과','담당자 검토기록'])top.append(create('th','',v));ordTable.append(top);
+      for(const ch of report.ordinance_checks){
+        const tr=create('tr',ch.attention==='warning'?'legal-report-attention':'');
+        const first=create('td');first.append(create('strong','',ch.title),create('p','',ch.reference));
+        const second=create('td');second.append(create('p','',ch.criterion),create('p','',ch.design_value),create('small','',ch.result));
+        const human=ch.human_review||{};
+        const last=create('td');last.append(create('strong','',ch.outdated?'재검토 필요':human.review_result||'미검토'),create('p','',human.note||'담당자 판단 미입력'),create('small','',human.drawing_ref||'도면 근거 미입력'));
+        tr.append(first,second,last);ordTable.append(tr);
+      }
+      area.append(ordTable);
+    }
   }catch(err){notify('검토조서 미리보기 실패: '+err.message,true);}
 }
 function renderDesignEvidence(){
@@ -696,6 +772,7 @@ function setup(){
   $('confirmButton').addEventListener('click',confirmFields);
   $('legalBuildButton').addEventListener('click',buildLegal);
   $('designEvidenceSave').addEventListener('click',saveDesignEvidence);
+  $('ordinanceSaveButton').addEventListener('click',saveOrdinance);
   $('legalGroupFilter').addEventListener('change',renderLegal);
   $('legalReviewFilter').addEventListener('change',renderLegal);
   $('legalSearch').addEventListener('input',renderLegal);

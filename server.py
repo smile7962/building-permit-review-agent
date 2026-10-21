@@ -51,7 +51,7 @@ def store():
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'BuildingPermitReview/0.2.4'
+    server_version = 'BuildingPermitReview/0.2.5'
 
     def _headers(self, status, mime='application/json; charset=utf-8', size=None, more=None):
         self.send_response(status)
@@ -166,10 +166,13 @@ class Handler(BaseHTTPRequestHandler):
             self._json(200, {'case':store().update_legal(obj.get('id'),obj.get('applicability'),obj.get('progress'),obj.get('note'))})
         elif parsed.path == '/api/legal-review-detail':
             obj=json.loads(self._read(16*1024))
-            self._json(200, {'case':store().save_legal_verification(
-                obj.get('id'),obj.get('applicability'),obj.get('progress'),obj.get('note'),
-                obj.get('review_result'),obj.get('drawing_value'),obj.get('drawing_ref'),
-                obj.get('criteria_ref'))})
+            self._json(200, {'case':store().save_legal_verification(obj.get('id'),obj.get('applicability'),obj.get('progress'),obj.get('note'),obj.get('review_result'),obj.get('drawing_value'),obj.get('drawing_ref'),obj.get('criteria_ref'))})
+        elif parsed.path == '/api/ordinance-inputs':
+            obj=json.loads(self._read(8*1024))
+            self._json(200, {'case':store().save_ordinance_inputs(obj.get('values'))})
+        elif parsed.path == '/api/ordinance-decision':
+            obj=json.loads(self._read(12*1024))
+            self._json(200, {'case':store().save_ordinance_decision(obj.get('id'),obj.get('review_result'),obj.get('note'),obj.get('drawing_ref'),obj.get('criteria_ref'))})
         elif parsed.path == '/api/legal-preview':
             self._read(1024)
             self._json(200, {'report':legal_preview(store().state())})

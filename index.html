@@ -33,7 +33,7 @@
         <button class="step" data-step="8"><span class="step-num">08</span><span><strong>검토조서</strong><small>최종 검토초안</small></span><span class="lock">준비중</span></button>
         <button class="step" data-step="9"><span class="step-num">09</span><span><strong>처리공문</strong><small>처리결과 문서</small></span><span class="lock">준비중</span></button>
       </nav>
-      <div class="sidebar-footer"><span>Phase 2 / v0.2.4</span><small>현재: 신청정보 구조화 기능</small></div>
+      <div class="sidebar-footer"><span>Phase 2 / v0.2.5</span><small>현재: 신청정보 구조화 기능</small></div>
     </aside>
     <main class="main">
       <div id="phase1Screen">
@@ -117,11 +117,14 @@
             <div id="designEvidenceFields" class="legal-evidence-fields"></div>
             <p class="legal-disclaimer">도로 2m는 「건축법」 제44조의 원칙으로, 예외 및 시행령의 추가 요건을 별도 확인해야 합니다. 입력 수치의 비교는 법적 적합성 결정이 아닙니다.</p>
           </section>
+          <section class="legal-evidence-panel ordinance-panel" aria-label="파주시 조례 사건별 검토">
+            <div class="legal-evidence-head"><div><h3>파주시 조례 · 사건별 적용기준 대조 (시범)</h3><p>2025년 도시계획·건축 조례와 제공된 2019년 주차장 별표를 분리 표시합니다. 시행일·부칙·상위법·예외를 담당자가 확인해야 합니다.</p></div><button class="btn outline" id="ordinanceSaveButton" type="button">조례 검토조건 저장·계산</button></div>
+            <div id="ordinanceFields" class="legal-evidence-fields"></div>
+            <p class="legal-disclaimer">자동 수치는 기본기준 비교만 수행합니다. 특히 주차장 별표는 2019년판으로 최신 적용기준이 아닐 수 있으며, 복합용도·증축·용도변경 법정대수는 자동 산정하지 않습니다.</p>
+            <div id="ordinanceResults" class="ordinance-results" aria-live="polite">검토조건을 입력하고 계산 버튼을 누르세요.</div>
+          </section>
           <section class="legal-preview-panel" aria-label="검토조서 자동 미리보기">
-            <div class="legal-evidence-head">
-              <div><h3>검토조서 자동 미리보기</h3><p>담당자가 저장한 검토결과와 빨간색 우선 확인사항을 집계합니다. 최종 처리문서가 아닙니다.</p></div>
-              <button class="btn outline" id="legalPreviewButton" type="button">검토조서 초안 갱신</button>
-            </div>
+            <div class="legal-evidence-head"><div><h3>검토조서 자동 미리보기</h3><p>담당자가 저장한 검토결과와 빨간색 우선 확인사항을 집계합니다. 최종 처리문서가 아닙니다.</p></div><button class="btn outline" id="legalPreviewButton" type="button">검토조서 초안 갱신</button></div>
             <div id="legalPreviewContent" aria-live="polite">먼저 검토항목을 저장한 후 초안을 갱신하세요.</div>
           </section>
           <div id="legalItems" class="legal-items"></div>
